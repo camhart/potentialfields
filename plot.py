@@ -17,8 +17,9 @@ import matplotlib.pyplot as plt
 from pylab import *
 import math
 import random
-import PotentialField
-import Fields
+from PotentialFields import PotentialField
+from PotentialFields import Fields.Fields
+from PotentialFields import Obstacle.Obstacle
 
 from math import atan2, cos, sin, sqrt, pi
 
@@ -102,14 +103,26 @@ class Temp:
     allFields = None
 
 def main():
-    Temp.allFields = Fields.Fields()
-    flagField = PotentialField.FlagField(400, -400)
-    Temp.allFields.addField(flagField)
+
+    Temp.allFields = Fields()
+    flagField = PotentialFields.PotentialField.GoalField(200, 200)
+    avoidField2 = PotentialFields.PotentialField.RepulsionField(-200, -300)
+    Temp.allFields.addField("flag", flagField)
+    Temp.allFields.addField("avoid3", avoidField2)
+
+
     triangle = ((0, 0), (100, 100), (-100, 50))
-    #plot_single(random_field, [triangle], 'random.png')
-    #plot_single(unidirectional, [triangle], 'unidirectional.png')
-    #plot_single(bidirectional, [triangle], 'bidirectional.png')
-    plot_single(fields, [triangle], 'fields.png')
+    square = ((100, -100), (200, -100), (200, -200), (100, -200))
+
+    obstacles = [triangle, square]
+    for o in obstacles:
+        obstacle = Obstacle(o)
+        Temp.allFields.addField("%d, %d" % (obstacle.x, obstacle.y), obstacle)
+
+#         for ob in o:
+#             Temp.allFields.addField("%d, %d" % (ob[0], ob[1]), PotentialField.TangentField(ob[0], ob[1], 50))
+
+    plot_single(fields, obstacles, 'fields.png')
 
 
 if __name__ == '__main__':
