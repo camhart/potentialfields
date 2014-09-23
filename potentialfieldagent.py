@@ -68,6 +68,7 @@ class SimpleAgent:
 	def run(self):
 		lastPrint = time.time()
 		imageCount = 0
+		doPrint = False
 		while True:
 			self.socket.mytanks.update()
 			self.game.update()
@@ -75,7 +76,7 @@ class SimpleAgent:
 			for tank in self.tanks:
 				tank.update()
 
-			if(time.time() - lastPrint > 3):
+			if(doPrint and time.time() - lastPrint > 5):
 				bzrplot.plot(self.tanks[0].field, "curgame_%d.png" % (imageCount, ))
 				imageCount+=1
 				lastPrint = time.time()
