@@ -56,7 +56,12 @@ class SimpleAgent:
 		self.socket = BZRSocket(hostname, port)
 		self.game = BZRGame(self.socket)
 
-		self.tanks = [CaptureFlagTank(self.socket.mytanks[0], self.game, "red"), CaptureFlagTank(self.socket.mytanks[1], self.game, "purple")]
+		index = 0
+		self.tanks = []
+		for tank in self.socket.mytanks.tanks:
+			targetColor = self.game.enemyTeamColors[index % len(self.game.enemyTeamColors)]
+			self.tanks.append(CaptureFlagTank(tank, self.game, targetColor))
+			index = index + 1
 
 
 	def run(self):

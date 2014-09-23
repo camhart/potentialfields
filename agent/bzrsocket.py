@@ -127,9 +127,9 @@ class BZRGame(object):
 			# 'color' : BZRTeam object
 
 		#Build Obstacles
+		self.buildTeams()
 		self.buildConstants()
 		self.buildObstacles()
-		self.buildTeams()
 
 	def buildObstacles(self):
 		obstacleResponse = self.socket.issueCommand("obstacles")
@@ -170,6 +170,8 @@ class BZRGame(object):
 			team = self.teams[res.parameters[1]]
 			team.tanks[res.parameters[0]] = BZREnemyTank()
 			team.tanks[res.parameters[0]].updateParameters(res)
+
+		self.enemyTeamColors = self.teams.keys()
 			
 
 	def updateTeams(self):
@@ -198,6 +200,8 @@ class BZRGame(object):
 			if(i == 0):
 				self.mycolor = constants[i].parameters[1]
 				break
+
+		self.enemyTeamColors.remove(self.mycolor)
 
 	def update(self):
 		self.updateShots()
