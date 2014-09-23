@@ -99,3 +99,37 @@ class TangentField(PotentialField):
 
             return (retX, retY)
         return (0, 0)
+
+#Specific fields
+
+class ObstacleField(TangentField):
+
+    def __init__(self, points):
+        self.alpha = -20.0
+        self.rotation = +90.0
+        self.x = 0  #center x
+        self.y = 0  #center y
+        self.range = 0 #range
+        for point in points:
+            px, py = point
+            self.x += float(px)
+            self.y += float(py)
+
+        self.x = self.x / float(len(points))
+        self.y = self.y / float(len(points))
+
+        for point in points:
+            px, py = point
+            px = float(px)
+            py = float(py)
+            dist = math.sqrt(math.pow(self.x - px, 2) + math.pow(self.y - py, 2))
+            if dist > self.range:
+                self.range = dist
+
+class ShotField(RepulsionField):
+
+    def __init__(self, x, y):
+        self.avoidX = x
+        self.avoidY = y
+        self.alpha = 15.0
+        self.range = 5

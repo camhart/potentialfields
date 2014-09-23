@@ -19,8 +19,7 @@ import math
 import random
 
 from potentialfields.fieldmanager import FieldManager
-from potentialfields.obstacle import Obstacle
-from potentialfields.fields import GoalField, RepulsionField
+from potentialfields.fields import GoalField, RepulsionField, ObstacleField
 
 from math import atan2, cos, sin, sqrt, pi
 
@@ -117,7 +116,7 @@ def main():
 
     obstacles = [triangle, square]
     for o in obstacles:
-        obstacle = Obstacle(o)
+        obstacle = ObstacleField(o)
         Temp.allFields.addField("%d, %d" % (obstacle.x, obstacle.y), obstacle)
 
 #         for ob in o:

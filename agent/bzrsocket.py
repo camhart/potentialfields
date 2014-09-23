@@ -5,10 +5,9 @@ import time
 import math
 import cmath
 import bzrplot
-# import potentialfields.Obstacle.Obstacle
-from potentialfields import fieldmanager
-from potentialfields.fields import GoalField
-from potentialfields.obstacle import Obstacle
+# import potentialfields.ObstacleField.ObstacleField
+from potentialfields.fieldmanager import FieldManager
+from potentialfields.fields import GoalField, ShotField, ObstacleField
 from potentialfields.fieldmanager import FieldManager
 
 
@@ -106,11 +105,6 @@ class BZRGame(object):
 		self.buildObstacles()
 
 		print self.mycolor
-# 		for ob in self.obstacles:
-# 			print "Obstacle: (%f, %f), range: %f, alpha: %f, rotation: %f" % \
-#                 (ob.x, ob.y, ob.range, ob.alpha, ob.rotation)
-
-# 		print([str(obstacle) for obstacle in self.obstacles])
 
 	def buildObstacles(self):
 		obstacleResponse = self.socket.issueCommand("obstacles")
@@ -128,9 +122,9 @@ class BZRGame(object):
 					x = -1
 					y = -1
 
-			obstacle = Obstacle(points)
-# 			print getattr(Obstacle, 'getKey')
-			self.fields.addField("Obstacle (%d, %d)" % (obstacle.x, obstacle.y), obstacle)
+			obstacle = ObstacleField(points)
+# 			print getattr(ObstacleField, 'getKey')
+			self.fields.addField("ObstacleField (%d, %d)" % (obstacle.x, obstacle.y), obstacle)
 			self.obstacles.append(obstacle)
 			self.points.append(points)
 			points = []
@@ -155,12 +149,27 @@ class BZRGame(object):
 				self.fields.addField(br.parameters[0], GoalField(float(br.parameters[2]), float(br.parameters[3])))
 				break	#might want to change this to let them go after different flags...
 
-	def updateEnemyTanks(self):
-		response = self.socket.issueCommand("othertanks")
+# 	def updateEnemyTanks(self):
+# 		response = self.socket.issueCommand("othertanks")
+#
+# # 		for r in response:
+# # 			print r.response
+# # 			print r.parameters
 
-		for r in response:
-			print r.response
-			print r.parameters
+	def updateShots(self):
+		#shot 242.490422334 77.1400313101 78.5985078261 61.8245466422
+		#shot x y origin_x origin_y
+		shotResponse = self.socket.issueCommand("shots")
+
+		#remove all shots fields
+		self.fields.removeShotFields()
+
+		shotNum = 0
+		for shot in shotResponse:
+			if shot.response == 'shot':
+				shotField = ShotField(float(shot.parameters[0]), float(shot.parameters[1]))
+				self.fields.addField("shot_%d" % (shotNum, ), shotField)
+				shotNum+=1
 
 
 class BZRResponseLine(object):
