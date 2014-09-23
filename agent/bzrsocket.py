@@ -92,6 +92,15 @@ class BZRTankGroup(object):
 	def __getitem__(self, index):
 		return self.tanks[index]
 
+class BZRTeam(object):
+	def __init__(self):
+		self.color = None
+		self.flagPosition = complex(0, 0)
+		self.tanks = []
+		self.basePosition = complex(0, 0)
+		self.flagCarriedBy = None
+
+
 class BZRGame(object):
 	def __init__(self, socket):
 		self.socket = socket
@@ -100,11 +109,13 @@ class BZRGame(object):
 		self.fields = FieldManager()
 		self.mycolor = None
 
+		self.teams = {}
+			# 'color' : BZRTeam object
+
 		#Build Obstacles
 		self.buildConstants()
 		self.buildObstacles()
-
-		print self.mycolor
+		self.buildTeams()
 
 	def buildObstacles(self):
 		obstacleResponse = self.socket.issueCommand("obstacles")
@@ -123,13 +134,32 @@ class BZRGame(object):
 					y = -1
 
 			obstacle = ObstacleField(points)
-# 			print getattr(ObstacleField, 'getKey')
+
 			self.fields.addField("ObstacleField (%d, %d)" % (obstacle.x, obstacle.y), obstacle)
 			self.obstacles.append(obstacle)
 			self.points.append(points)
 			points = []
 
 		return self.obstacles
+
+	def buildTeams(self):
+		teamsResponse = self.socket.issueCommand("bases")
+
+		for res in teamsResponse:
+			team = BZRTeam()
+			team.color = res.parameters[0]
+			team.basePosition = complex(float(res.parameters[1]), float(res.parameters[2]))
+			self.teams[team.color] = team
+
+	def updateTeams(self):
+		flagsResponse = self.socket.issueCommand("flags")
+
+		for res in flagsResponse:
+			#color, possesing, positionx, positiony
+			team = self.teams[res.parameters[0]]
+			team.flagPosition = complex(float(res.parameters[2]), float(res.parameters[3]))
+			team.flagCarriedBy = res.parameters[1]
+
 
 	def buildConstants(self):
 		constants = self.socket.issueCommand("constants")
@@ -139,22 +169,9 @@ class BZRGame(object):
 				self.mycolor = constants[i].parameters[1]
 				break
 
-
-	def updateFlags(self):
-		baseResponse = self.socket.issueCommand("flags")
-
-		for br in baseResponse:
-			print br.parameters
-			if br.parameters[1] == 'none' and br.parameters[0] != self.mycolor:
-				self.fields.addField(br.parameters[0], GoalField(float(br.parameters[2]), float(br.parameters[3])))
-				break	#might want to change this to let them go after different flags...
-
-# 	def updateEnemyTanks(self):
-# 		response = self.socket.issueCommand("othertanks")
-#
-# # 		for r in response:
-# # 			print r.response
-# # 			print r.parameters
+	def update(self):
+		self.updateShots()
+		self.updateTeams()
 
 	def updateShots(self):
 		#shot 242.490422334 77.1400313101 78.5985078261 61.8245466422
@@ -250,8 +267,6 @@ if __name__ == "__main__":
 	socketTest = BZRSocket(args.host, args.port)
 
 	game = BZRGame(socketTest)
-	game.updateFlags()
-	game.updateEnemyTanks()
 
 	bzrplot.Temp.allFields = game.fields
 

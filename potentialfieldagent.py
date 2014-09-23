@@ -1,8 +1,7 @@
 
-from Agent import BZRSocket
-from PotentialFields import PotentialField
-from PotentialFields.Fields import Fields
-from PotentialFields.Obstacle import Obstacle
+from agent.bzrsocket import BZRSocket
+from potentialfields.fields import GoalField
+from potentialfields.fieldmanager import FieldManager
 import argparse
 import time
 import cmath
@@ -20,34 +19,36 @@ class FieldFollowTank:
 		if fieldDir != complex(0, 0):
 			fieldDirUnit = fieldDir / abs(fieldDir)
 
-			self.bzrTank.SetSpeed(max(0, (fieldDirUnit.conjugate() * self.bzrTank.direction).real))
-			self.bzrTank.RotateTowards(fieldDirUnit)
-		
+			self.bzrTank.setSpeed(max(0, (fieldDirUnit.conjugate() * self.bzrTank.direction).real))
+			self.bzrTank.rotateTowards(fieldDirUnit)
+
 		if self.bzrTank.shotsAvailable > 0:
-			self.bzrTank.Shoot()
-	
+			self.bzrTank.shoot()
+
 
 class SimpleAgent:
 	def __init__(self, hostname, port):
 
-		self.socket = BZRSocket.BZRSocket(hostname, port)
+		self.socket = BZRSocket(hostname, port)
 
-		self.field = Fields()
-		self.field.addField("flag", PotentialField.GoalField(370, 0))
+		self.field = FieldManager()
+		self.field.addField("flag", GoalField(370, 0))
 
 		self.tanks = [FieldFollowTank(self.socket.mytanks[0], self.field), FieldFollowTank(self.socket.mytanks[1], self.field)]
+
+
 	def run(self):
 		while True:
-			self.socket.mytanks.Update()
+			self.socket.mytanks.update()
 
 			for tank in self.tanks:
 				tank.update()
-			
+
 			time.sleep(0)
 
 
 if __name__ == "__main__":
-	
+
 
 	parser = argparse.ArgumentParser(prog="potentialfieldagent")
 	parser.add_argument("--host", help="the host to connect to")
