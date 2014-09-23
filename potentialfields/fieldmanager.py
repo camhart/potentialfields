@@ -1,6 +1,6 @@
-class Fields(object):
+class FieldManager(object):
     '''
-        Object containing all fields
+        Object managing all fields
     '''
 
     def __init__(self):

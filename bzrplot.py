@@ -17,9 +17,10 @@ import matplotlib.pyplot as plt
 from pylab import *
 import math
 import random
-from PotentialFields import PotentialField
-from PotentialFields.Fields import Fields
-from PotentialFields.Obstacle import Obstacle
+
+from potentialfields.fieldmanager import FieldManager
+from potentialfields.obstacle import Obstacle
+from potentialfields.fields import GoalField, RepulsionField
 
 from math import atan2, cos, sin, sqrt, pi
 
@@ -104,9 +105,9 @@ class Temp:
 
 def main():
 
-    Temp.allFields = Fields()
-    flagField = PotentialField.GoalField(200, 200)
-    avoidField2 = PotentialField.RepulsionField(-200, -300)
+    Temp.allFields = FieldManager()
+    flagField = GoalField(200, 200)
+    avoidField2 = RepulsionField(-200, -300)
     Temp.allFields.addField("flag", flagField)
     Temp.allFields.addField("avoid3", avoidField2)
 

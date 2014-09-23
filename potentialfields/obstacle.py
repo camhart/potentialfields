@@ -1,5 +1,5 @@
 import math
-from .PotentialField import TangentField
+from potentialfields.fields import TangentField
 
 class Obstacle(TangentField):
 
