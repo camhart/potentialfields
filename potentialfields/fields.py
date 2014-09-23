@@ -11,20 +11,20 @@ class GoalField(PotentialField):
     '''
 
     def __init__(self, goalX, goalY):
-        self.avoidX = goalX
-        self.avoidY = goalY
+        self.x = goalX
+        self.y = goalY
         self.alpha = -10.0       #negative pull's in
 
     def setGoal(self, x, y):
         '''
         Sets new goal (flag) coordinate
         '''
-        self.avoidX = x
-        self.avoidY = y
+        self.x = x
+        self.y = y
 
     def calculateField(self, x, y):
-        diffX = x - self.avoidX
-        diffY = y - self.avoidY
+        diffX = x - self.x
+        diffY = y - self.y
         if diffX == 0 and diffY == 0: #sitting on the goal
             return (0, 0)
 
@@ -42,8 +42,8 @@ class RepulsionField(PotentialField):
     '''
 
     def __init__(self, avoidX, avoidY):
-        self.avoidX = avoidX
-        self.avoidY = avoidY
+        self.x = avoidX
+        self.y = avoidY
         self.alpha = 15
         self.range = 25
 
@@ -51,12 +51,12 @@ class RepulsionField(PotentialField):
         '''
         Sets new goal (flag) coordinate
         '''
-        self.avoidX = x
-        self.avoidY = y
+        self.x = x
+        self.y = y
 
     def calculateField(self, x, y):
-        diffX = x - self.avoidX
-        diffY = y - self.avoidY
+        diffX = x - self.x
+        diffY = y - self.y
 
         dist = math.sqrt(math.pow(diffX, 2) + math.pow(diffY, 2))
 
@@ -129,7 +129,7 @@ class ObstacleField(TangentField):
 class ShotField(RepulsionField):
 
     def __init__(self, x, y):
-        self.avoidX = x
-        self.avoidY = y
+        self.x = x
+        self.y = y
         self.alpha = 15.0
         self.range = 5
