@@ -4,8 +4,14 @@ import argparse
 import time
 import math
 import cmath
+import bzrplot
+# import PotentialFields.Obstacle.Obstacle
+from PotentialFields.Fields import Fields
+from PotentialFields.PotentialField import GoalField
+from PotentialFields.Obstacle import Obstacle
 
-class BZRTank:
+
+class BZRTank(object):
 	def __init__(self, socket, index):
 		self.socket = socket
 		self.index = index
@@ -53,15 +59,15 @@ class BZRTank:
 
 	def RotateTowards(self, direction):
 		self.targetDirection = direction
-		
+
 	def UpdateLogic(self):
 		if self.targetDirection != complex(0, 0):
 			targetAngluarVelocity = cmath.phase(self.direction.conjugate() * self.targetDirection)
 			self.SendAngularVelocity(targetAngluarVelocity)
-			
-			
 
-class BZRTankGroup:
+
+
+class BZRTankGroup(object):
 	def __init__(self, socket):
 		self.socket = socket
 		self.tanks = []
@@ -86,13 +92,75 @@ class BZRTankGroup:
 	def __getitem__(self, index):
 		return self.tanks[index]
 
-class BZRResponseLine:
+class BZRGame(object):
+	def __init__(self, socket):
+		self.socket = socket
+		self.obstacles = []
+		self.points = []
+		self.fields = Fields()
+		self.mycolor = None
+
+		#Build Obstacles
+		self.BuildConstants()
+		self.BuildObstacles()
+
+		print self.mycolor
+# 		for ob in self.obstacles:
+# 			print "Obstacle: (%f, %f), range: %f, alpha: %f, rotation: %f" % \
+#                 (ob.x, ob.y, ob.range, ob.alpha, ob.rotation)
+
+# 		print([str(obstacle) for obstacle in self.obstacles])
+
+	def BuildObstacles(self):
+		obstacleResponse = self.socket.IssueCommand("obstacles")
+
+		for rl in obstacleResponse:
+			x = -1
+			y = -1
+			points = []
+			for param in rl.parameters:
+				if(x == -1):
+					x = float(param)
+				elif(y == -1):
+					y = float(param)
+					points.append((x, y))
+					x = -1
+					y = -1
+
+			obstacle = Obstacle(points)
+# 			print getattr(Obstacle, 'getKey')
+			self.fields.addField("Obstacle (%d, %d)" % (obstacle.x, obstacle.y), obstacle)
+			self.obstacles.append(obstacle)
+			self.points.append(points)
+			points = []
+
+		return self.obstacles
+
+	def BuildConstants(self):
+		constants = self.socket.IssueCommand("constants")
+
+		for i in xrange(len(constants)):
+			if(i == 0):
+				self.mycolor = constants[i].parameters[1]
+				break
+
+
+	def UpdateFlags(self):
+		baseResponse = self.socket.IssueCommand("flags")
+
+		for br in baseResponse:
+			print br.parameters
+			if br.parameters[1] == 'none' and br.parameters[0] != self.mycolor:
+				self.fields.addField(br.parameters[0], GoalField(float(br.parameters[2]), float(br.parameters[3])))
+				break	#might want to change this to let them go after different flags...
+
+class BZRResponseLine(object):
 	def __init__(self, line):
 		parameters = line.split()
 		self.response = parameters[0]
 		self.parameters = parameters[1:]
 
-class BZRSocket:
+class BZRSocket(object):
 	def __init__(self, host, port):
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.socket.connect( (host, port) )
@@ -106,7 +174,7 @@ class BZRSocket:
 		self.socket.send("agent 1\n")
 
 		self.mytanks = BZRTankGroup(self)
-	
+
 	def ReadLine(self):
 		endLineLocation = self.pendingData.find("\n")
 		while endLineLocation == -1:
@@ -116,7 +184,7 @@ class BZRSocket:
 				raise Exception("Socket closed")
 			else:
 				self.pendingData += newData
-			
+
 			endLineLocation = self.pendingData.find("\n")
 
 		result = self.pendingData[0:endLineLocation]
@@ -141,7 +209,7 @@ class BZRSocket:
 			raise Exception("Invalid server response")
 
 		responseLines = []
-		
+
 		line = self.ReadLine()
 
 		if line == "begin":
@@ -153,15 +221,22 @@ class BZRSocket:
 			responseLines.append(BZRResponseLine(line))
 
 		return responseLines
-		
-		
+
+
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(prog="BZRSocket")
 	parser.add_argument("--host", help="the host to connect to")
 	parser.add_argument("--port", type=int, help="the port to connect to")
 	args = parser.parse_args()
-	
+
 	socketTest = BZRSocket(args.host, args.port)
+
+	game = BZRGame(socketTest)
+	game.UpdateFlags()
+
+	bzrplot.Temp.allFields = game.fields
+
+	bzrplot.plot_single(bzrplot.fields, game.points, 'game.png')
 
 	tankTest = socketTest.mytanks[1]
 	tankTest.SetSpeed(1.0)
@@ -169,4 +244,4 @@ if __name__ == "__main__":
 
 	while True:
 		socketTest.mytanks.Update()
-	
+

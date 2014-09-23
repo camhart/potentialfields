@@ -18,8 +18,8 @@ from pylab import *
 import math
 import random
 from PotentialFields import PotentialField
-from PotentialFields import Fields.Fields
-from PotentialFields import Obstacle.Obstacle
+from PotentialFields.Fields import Fields
+from PotentialFields.Obstacle import Obstacle
 
 from math import atan2, cos, sin, sqrt, pi
 
@@ -105,8 +105,8 @@ class Temp:
 def main():
 
     Temp.allFields = Fields()
-    flagField = PotentialFields.PotentialField.GoalField(200, 200)
-    avoidField2 = PotentialFields.PotentialField.RepulsionField(-200, -300)
+    flagField = PotentialField.GoalField(200, 200)
+    avoidField2 = PotentialField.RepulsionField(-200, -300)
     Temp.allFields.addField("flag", flagField)
     Temp.allFields.addField("avoid3", avoidField2)
 
