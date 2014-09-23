@@ -124,7 +124,7 @@ class ObstacleField(TangentField):
             py = float(py)
             dist = math.sqrt(math.pow(self.x - px, 2) + math.pow(self.y - py, 2))
             if dist > self.range:
-                self.range = dist
+                self.range = dist * 1.25
 
 class ShotField(RepulsionField):
 
@@ -132,4 +132,4 @@ class ShotField(RepulsionField):
         self.x = x
         self.y = y
         self.alpha = 15.0
-        self.range = 5
+        self.range = 15.0

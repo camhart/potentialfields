@@ -98,6 +98,10 @@ def bidirectional(x, y, res):
 def fields(x, y, res):
     return Temp.allFields.calculateField(x, y)
 
+def plot(field, imagename):
+    Temp.allFields = field
+    plot_single(fields, [], imagename)
+
 
 class Temp:
     allFields = None

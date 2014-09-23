@@ -6,6 +6,7 @@ import argparse
 import time
 import cmath
 import random
+import bzrplot
 
 class FieldFollowTank(object):
 	def __init__(self, bzrTank, field):
@@ -60,12 +61,19 @@ class SimpleAgent:
 
 
 	def run(self):
+		lastPrint = time.time()
+		imageCount = 0
 		while True:
 			self.socket.mytanks.update()
 			self.game.update()
 
 			for tank in self.tanks:
 				tank.update()
+
+			if(time.time() - lastPrint > 3):
+				bzrplot.plot(self.tanks[0].field, "curgame_%d.png" % (imageCount, ))
+				imageCount+=1
+				lastPrint = time.time()
 
 			time.sleep(0)
 

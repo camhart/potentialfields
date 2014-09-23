@@ -31,7 +31,9 @@ class DumbTank:
 class DumbAgent:
 	def __init__(self, hostname, port):
 		self.socket = BZRSocket(hostname, port)
-		self.tanks = [DumbTank(self.socket.mytanks[0]), DumbTank(self.socket.mytanks[1])]
+		self.tanks = []
+		for tank in self.socket.mytanks.tanks:
+			self.tanks.append(DumbTank(tank))
 
 	def run(self):
 		while True:
