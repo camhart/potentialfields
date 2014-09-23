@@ -20,13 +20,6 @@ class FieldManager(object):
     def setAvoid(self, key, x, y):
         self.fields[key].setAvoid(x, y)
 
-#     def setAvoidAll(self, x, y):
-#         '''
-#         Sets new goal (flag) coordinate for all fields with setAvoid
-#         '''
-#         for field in self.fields.values():
-#             if field.setAvoid:
-#                 field.setAvoid(x, y)
 
     def addField(self, key, field):
         '''
@@ -35,6 +28,11 @@ class FieldManager(object):
         if self.fields.has_key(key):
             self.fields.pop(key)
         self.fields[key] = field
+
+    def removeShotFields(self):
+        for key in self.fields.keys():
+            if 'shot' in key:
+                self.fields.fields.pop(key)
 
     def calculateField(self, x, y):
         '''
