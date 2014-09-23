@@ -58,6 +58,9 @@ class RepulsionField(PotentialField):
         diffX = x - self.x
         diffY = y - self.y
 
+        if diffX == 0 and diffY == 0:
+            return (0, 0)
+
         dist = math.sqrt(math.pow(diffX, 2) + math.pow(diffY, 2))
 
         if dist < self.range:
@@ -132,4 +135,11 @@ class ShotField(RepulsionField):
         self.x = x
         self.y = y
         self.alpha = 15.0
-        self.range = 15.0
+        self.range = 50.0
+
+class TankField(RepulsionField):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.alpha = 15
+        self.range = 10
