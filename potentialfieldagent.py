@@ -1,5 +1,5 @@
 
-from agent.bzrsocket import BZRSocket
+from agent.bzrsocket import BZRSocket, BZRGame
 from potentialfields.fields import GoalField
 from potentialfields.fieldmanager import FieldManager
 import argparse
@@ -7,7 +7,7 @@ import time
 import cmath
 import random
 
-class FieldFollowTank:
+class FieldFollowTank(object):
 	def __init__(self, bzrTank, field):
 		self.bzrTank = bzrTank
 		self.field = field
@@ -25,21 +25,44 @@ class FieldFollowTank:
 		if self.bzrTank.shotsAvailable > 0:
 			self.bzrTank.shoot()
 
+class CaptureFlagTank(FieldFollowTank):
+	def __init__(self, bzrTank, game, color):
+		self.field = FieldManager()
+		self.field.addField("world", game.fields)
+		flagPos = game.teams[color].flagPosition
+		self.goalField = GoalField(flagPos.real, flagPos.imag)
+		self.field.addField("flag", self.goalField)
+
+		super(CaptureFlagTank,self).__init__(bzrTank, self.field)
+		self.game = game
+		self.targetColor = color
+
+
+	def update(self):
+		if self.bzrTank.flag == '-':
+			flagPos = self.game.teams[self.targetColor].flagPosition
+			self.goalField.x = flagPos.real
+			self.goalField.y = flagPos.imag
+		else:
+			homePos = self.game.teams[self.game.mycolor].basePosition
+			self.goalField.x = homePos.real
+			self.goalField.y = homePos.imag
+
+		super(CaptureFlagTank,self).update()
 
 class SimpleAgent:
 	def __init__(self, hostname, port):
 
 		self.socket = BZRSocket(hostname, port)
+		self.game = BZRGame(self.socket)
 
-		self.field = FieldManager()
-		self.field.addField("flag", GoalField(370, 0))
-
-		self.tanks = [FieldFollowTank(self.socket.mytanks[0], self.field), FieldFollowTank(self.socket.mytanks[1], self.field)]
+		self.tanks = [CaptureFlagTank(self.socket.mytanks[0], self.game, "red"), CaptureFlagTank(self.socket.mytanks[1], self.game, "purple")]
 
 
 	def run(self):
 		while True:
 			self.socket.mytanks.update()
+			self.game.update()
 
 			for tank in self.tanks:
 				tank.update()

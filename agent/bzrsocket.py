@@ -37,6 +37,7 @@ class BZRTank(object):
 		self.status = responseLine.parameters[2]
 		self.shotsAvailable = int(responseLine.parameters[3])
 		self.timeToReload = float(responseLine.parameters[4])
+		self.flag = responseLine.parameters[5]
 		self.position = complex(float(responseLine.parameters[6]), float(responseLine.parameters[7]))
 		self.heading = float(responseLine.parameters[8])
 		self.velocity = complex(float(responseLine.parameters[9]), float(responseLine.parameters[10]))
@@ -154,6 +155,7 @@ class BZRGame(object):
 	def updateTeams(self):
 		flagsResponse = self.socket.issueCommand("flags")
 
+
 		for res in flagsResponse:
 			#color, possesing, positionx, positiony
 			team = self.teams[res.parameters[0]]
@@ -232,7 +234,7 @@ class BZRSocket(object):
 
 		result = self.readResponse()
 
-		if result[0].response == "fail" and not silentFail:
+		if len(result) > 0 and result[0].response == "fail" and not silentFail:
 			raise Exception("Failed to issue command: " + commandMessage + " response: " + " ".join(result[0].parameters))
 
 		return result

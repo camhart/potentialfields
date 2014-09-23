@@ -32,7 +32,7 @@ class FieldManager(object):
     def removeShotFields(self):
         for key in self.fields.keys():
             if 'shot' in key:
-                self.fields.fields.pop(key)
+                self.fields.pop(key)
 
     def calculateField(self, x, y):
         '''
