@@ -1,6 +1,6 @@
 import math
 
-class PotentialField:
+class PotentialField(object):
 
     def calculateField(self, x, y):
         raise NotImplemented("not implemented")

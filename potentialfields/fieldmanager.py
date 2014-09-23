@@ -1,6 +1,6 @@
-class Fields:
+class FieldManager(object):
     '''
-        Object containing all fields
+        Object managing all fields
     '''
 
     def __init__(self):
@@ -20,18 +20,20 @@ class Fields:
     def setAvoid(self, key, x, y):
         self.fields[key].setAvoid(x, y)
 
-    def setAvoidAll(self, x, y):
-        '''
-        Sets new goal (flag) coordinate for all fields with setAvoid
-        '''
-        for field in self.fields.values():
-            if field.setAvoid:
-                field.setAvoid(x, y)
+#     def setAvoidAll(self, x, y):
+#         '''
+#         Sets new goal (flag) coordinate for all fields with setAvoid
+#         '''
+#         for field in self.fields.values():
+#             if field.setAvoid:
+#                 field.setAvoid(x, y)
 
     def addField(self, key, field):
         '''
-        Adds field to list of fields
+        Adds field to list of fields.  Replaces if key already exists.
         '''
+        if self.fields.has_key(key):
+            self.fields.pop(key)
         self.fields[key] = field
 
     def calculateField(self, x, y):
