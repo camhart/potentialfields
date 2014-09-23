@@ -7,7 +7,7 @@ import cmath
 import bzrplot
 # import potentialfields.ObstacleField.ObstacleField
 from potentialfields.fieldmanager import FieldManager
-from potentialfields.fields import GoalField, ShotField, ObstacleField
+from potentialfields.fields import GoalField, ShotField, ObstacleField, TankField
 from potentialfields.fieldmanager import FieldManager
 
 
@@ -93,11 +93,24 @@ class BZRTankGroup(object):
 	def __getitem__(self, index):
 		return self.tanks[index]
 
+class BZREnemyTank(object):
+	def __init__(self):
+		self.status = None
+		self.flag = None
+		self.position = complex(0, 0)
+		self.angle = 0
+
+	def updateParameters(self, responseLine):
+		self.status = responseLine.parameters[2]
+		self.flag = responseLine.parameters[3]
+		self.position = complex(float(responseLine.parameters[4]), float(responseLine.parameters[5]))
+		self.angle = responseLine.parameters[6]
+
 class BZRTeam(object):
 	def __init__(self):
 		self.color = None
 		self.flagPosition = complex(0, 0)
-		self.tanks = []
+		self.tanks = {}
 		self.basePosition = complex(0, 0)
 		self.flagCarriedBy = None
 
@@ -152,6 +165,13 @@ class BZRGame(object):
 			team.basePosition = complex(float(res.parameters[1]), float(res.parameters[2]))
 			self.teams[team.color] = team
 
+		otherTankResponse = self.socket.issueCommand("othertanks")
+		for res in otherTankResponse:
+			team = self.teams[res.parameters[1]]
+			team.tanks[res.parameters[0]] = BZREnemyTank()
+			team.tanks[res.parameters[0]].updateParameters(res)
+			
+
 	def updateTeams(self):
 		flagsResponse = self.socket.issueCommand("flags")
 
@@ -162,6 +182,14 @@ class BZRGame(object):
 			team.flagPosition = complex(float(res.parameters[2]), float(res.parameters[3]))
 			team.flagCarriedBy = res.parameters[1]
 
+		otherTankResponse = self.socket.issueCommand("othertanks")
+		
+		for res in otherTankResponse:
+			team = self.teams[res.parameters[1]]
+			tank = team.tanks[res.parameters[0]]
+			tank.updateParameters(res)
+			tankField = TankField(tank.position.real, tank.position.imag)
+			self.fields.addField("enemy_tank_%s" % (res.parameters[0]), tankField)
 
 	def buildConstants(self):
 		constants = self.socket.issueCommand("constants")
