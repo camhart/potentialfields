@@ -10,6 +10,11 @@ from potentialfields.fieldmanager import FieldManager
 from potentialfields.fields import GoalField, ShotField, ObstacleField, TankField
 from potentialfields.fieldmanager import FieldManager
 
+class BZROccGrid(object):
+	def __init__(self, x, y, data):
+		self.x = x
+		self.y = y
+		self.data = data
 
 class BZRTank(object):
 	def __init__(self, socket, index):
@@ -66,6 +71,27 @@ class BZRTank(object):
 			targetAngluarVelocity = cmath.phase(self.direction.conjugate() * self.targetDirection)
 			self.sendAngularVelocity(targetAngluarVelocity)
 
+	def sampleGrid(self):
+		gridResponse = self.socket.issueCommand("occgrid " + str(self.index), True)
+
+		if len(gridResponse) == 0 or gridResponse[0].response == "fail":
+			return None
+
+		position = gridResponse[0].parameters[0].split(",")
+		size = gridResponse[1].parameters[0].split("x")
+
+		data = []
+
+		for x in range(int(size[0])):
+			row = []
+
+			for y in range(int(size[1])):
+				row.append(gridResponse[x + 2].response[y] == "1")
+
+			data.append(row)
+
+		return BZROccGrid(int(position[0]), int(position[1]), data)
+			
 
 
 class BZRTankGroup(object):
@@ -132,7 +158,10 @@ class BZRGame(object):
 		self.buildObstacles()
 
 	def buildObstacles(self):
-		obstacleResponse = self.socket.issueCommand("obstacles")
+		obstacleResponse = self.socket.issueCommand("obstacles", True)
+
+		if obstacleResponse[0].response == "fail":
+			return []
 
 		for rl in obstacleResponse:
 			x = -1
@@ -275,7 +304,7 @@ class BZRSocket(object):
 		ack = self.readLine()
 
 		if ack[0:3] != "ack":
-			raise Exception("Invalid server response")
+			return [BZRResponseLine("fail")]
 
 		responseLines = []
 
