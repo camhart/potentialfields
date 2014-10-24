@@ -14,6 +14,8 @@ class BZROccGrid(object):
 	def __init__(self, x, y, data):
 		self.x = x
 		self.y = y
+		self.width = len(data)
+		self.height = len(data[0])
 		self.data = data
 
 class BZRTank(object):
@@ -86,7 +88,7 @@ class BZRTank(object):
 			row = []
 
 			for y in range(int(size[1])):
-				row.append(gridResponse[x + 2].response[y] == "1")
+				row.append(float(gridResponse[x + 2].response[y]))
 
 			data.append(row)
 
@@ -148,6 +150,7 @@ class BZRGame(object):
 		self.points = []
 		self.fields = FieldManager()
 		self.mycolor = None
+		self.worldSize = 0
 
 		self.teams = {}
 			# 'color' : BZRTeam object
@@ -226,9 +229,11 @@ class BZRGame(object):
 		constants = self.socket.issueCommand("constants")
 
 		for i in xrange(len(constants)):
-			if(i == 0):
+			constantName = constants[i].parameters[0]
+			if(constantName == "team"):
 				self.mycolor = constants[i].parameters[1]
-				break
+			elif constantName == "worldsize":
+				self.worldSize = int(constants[i].parameters[1])
 
 		self.enemyTeamColors.remove(self.mycolor)
 
