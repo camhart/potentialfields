@@ -20,32 +20,59 @@ class ObstacleData(object):
 	def __init__(self, width, height):
 		self.width = width
 		self.height = height
-		self.data = zeros((width, height, 3))
-		self.mapped = zeros((width, height))
+		self.data = zeros((height, width, 3))
+		self.mapped = zeros((height, width))
 
-		self.gridSize = 50
+		self.gridSize = 25
 
-		for x in range(width):
-			for y in range(height):
-				self.data[x][y][0] = 0.25
+		for y in range(height):
+			for x in range(width):
+				self.data[y][x][0] = 0.25
 
 	def setSample(self, x, y, value):
 		if x >= 0 and x < self.width and y >= 0 and y < self.width:		
-			self.mapped[x][y] = 1
-			self.data[x][y][0] = 0
-			self.data[x][y][1] = value * 0.75 + 0.25
-			self.data[x][y][2] = value
+			self.mapped[y][x] = 1
+			self.data[y][x][0] = 0
+			self.data[y][x][1] = value * 0.75 + 0.25
+			self.data[y][x][2] = value
 		
 
 	def setOccSample(self, occSample):
-		self.gridSize = occSample.width / 2
+		self.gridSize = int(occSample.width / 4)
 
 		for x in range(occSample.width):
 			for y in range(occSample.height):
-				targetY = x + occSample.x + self.width / 2
-				targetX = y + occSample.y + self.height / 2
+				targetX = x + occSample.x + self.width / 2
+				targetY = y + occSample.y + self.height / 2
 				self.setSample(targetX, targetY, occSample.data[x][y])
+
+	def isCharted(self, x, y):
+		return self.mapped[int(y) + self.width / 2, int(x) + self.height / 2] == 1
 		
+	def getUnchartedPoint(self, startX, startY):
+
+		gridStepX = self.width / self.gridSize
+		gridStepY = self.height / self.gridSize
+
+		gridOffsetX = int(startX - self.gridSize / 2) / self.gridSize
+		gridOffsetY = int(startY - self.gridSize / 2) / self.gridSize
+
+		#rough check
+		for y in xrange(gridStepY):
+			for x in xrange(gridStepX):
+				xPoint = self.gridSize * ((x + gridOffsetX) % gridStepX)
+				yPoint = self.gridSize * ((y + gridOffsetY) % gridStepY)
+
+				if self.mapped[yPoint, xPoint] != 1:
+					return xPoint - self.width / 2, yPoint - self.height / 2
+
+		#per pixel check
+		for y in xrange(self.height):
+			for x in xrange(self.width):
+				if self.mapped[x, y] != 1:
+					return x - self.width / 2, y - self.height / 2
+
+		return None
 
 def DrawObstacleData(data):
 	# This assumes you are using a numpy array for your grid
@@ -89,8 +116,8 @@ class GridMappingTank(FieldFollowTank):
 	def __init__(self, bzrTank, game, color, obstacleData):
 		self.field = FieldManager()
 		self.field.addField("world", game.fields)
-		flagPos = game.teams[color].flagPosition
-		self.goalField = GoalField(flagPos.real, flagPos.imag)
+		self.targetPoint = obstacleData.getUnchartedPoint(bzrTank.position.real, bzrTank.position.imag)
+		self.goalField = GoalField(self.targetPoint[0], self.targetPoint[1])
 		self.field.addField("flag", self.goalField)
 
 		super(GridMappingTank,self).__init__(bzrTank, self.field)
@@ -100,21 +127,19 @@ class GridMappingTank(FieldFollowTank):
 
 
 	def update(self):
-		if self.bzrTank.flag == '-':
-			flagPos = self.game.teams[self.targetColor].flagPosition
-			self.goalField.x = flagPos.real
-			self.goalField.y = flagPos.imag
-		else:
-			homePos = self.game.teams[self.game.mycolor].basePosition
-			self.goalField.x = homePos.real
-			self.goalField.y = homePos.imag
-
-		super(GridMappingTank,self).update()
-
 		gridSample = self.bzrTank.sampleGrid()
 
 		if gridSample != None:
 			self.obstacleData.setOccSample(gridSample)
+
+		if self.targetPoint != None and self.obstacleData.isCharted(self.targetPoint[0], self.targetPoint[1]):
+			self.targetPoint = self.obstacleData.getUnchartedPoint(self.bzrTank.position.real, self.bzrTank.position.imag)
+
+			if self.targetPoint != None:
+				self.goalField.x = self.targetPoint[0]
+				self.goalField.y = self.targetPoint[1]
+
+		super(GridMappingTank,self).update()
 
 class SimpleAgent:
 	def __init__(self, hostname, port):
