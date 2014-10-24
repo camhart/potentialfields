@@ -20,22 +20,37 @@ class ObstacleData(object):
 	def __init__(self, width, height):
 		self.width = width
 		self.height = height
-		self.data = zeros((width, height))
+		self.data = zeros((width, height, 3))
+		self.mapped = zeros((width, height))
+
+		self.gridSize = 50
+
+		for x in range(width):
+			for y in range(height):
+				self.data[x][y][0] = 0.25
+
+	def setSample(self, x, y, value):
+		if x >= 0 and x < self.width and y >= 0 and y < self.width:		
+			self.mapped[x][y] = 1
+			self.data[x][y][0] = 0
+			self.data[x][y][1] = value * 0.75 + 0.25
+			self.data[x][y][2] = value
+		
 
 	def setOccSample(self, occSample):
+		self.gridSize = occSample.width / 2
+
 		for x in range(occSample.width):
 			for y in range(occSample.height):
 				targetY = x + occSample.x + self.width / 2
 				targetX = y + occSample.y + self.height / 2
-				if targetX >= 0 and targetX < self.width and targetY >= 0 and targetY < self.width:
-					self.data[targetX][targetY] = occSample.data[x][y]
+				self.setSample(targetX, targetY, occSample.data[x][y])
 		
 
 def DrawObstacleData(data):
 	# This assumes you are using a numpy array for your grid
-	width, height = data.data.shape
 	glRasterPos2f(-1, -1)
-	glDrawPixels(width, height, GL_LUMINANCE, GL_FLOAT, data.data)
+	glDrawPixels(data.width, data.height, GL_RGB, GL_FLOAT, data.data)
 	glFlush()
 	glutSwapBuffers()
 

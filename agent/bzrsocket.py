@@ -152,6 +152,11 @@ class BZRGame(object):
 		self.mycolor = None
 		self.worldSize = 0
 
+		self.truePositive = 0
+		self.trueNegative = 0
+	
+		self.otherConstants = {}
+
 		self.teams = {}
 			# 'color' : BZRTeam object
 
@@ -234,6 +239,12 @@ class BZRGame(object):
 				self.mycolor = constants[i].parameters[1]
 			elif constantName == "worldsize":
 				self.worldSize = int(constants[i].parameters[1])
+			elif constantName == "truepositive":
+				self.truePositive = float(constants[i].parameters[1])
+			elif constantName == "truenegative":
+				self.trueNegative = float(constants[i].parameters[1])
+			else:
+				self.otherConstants[constantName] = constants[i].parameters[1]
 
 		self.enemyTeamColors.remove(self.mycolor)
 
