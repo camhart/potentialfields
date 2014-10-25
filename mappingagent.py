@@ -23,10 +23,11 @@ class ObstacleData(object):
 		self.value = zeros((height, width))
 		self.data = zeros((height, width, 3))
 		self.mapped = zeros((height, width))
+		# self.mapped2 = []
 		for y in xrange(height):
 			for x in xrange(width):
-				self.value[y][x] = 0.85
-		print self.value
+				self.value[y][x] = 0.5
+				# self.mapped2.append((x, y))
 		self.threshold = 0.5
 		self.gridSize = 50
 		self.truePositive = float(truePositive)
@@ -41,13 +42,15 @@ class ObstacleData(object):
 
 	def setSample(self, x, y, value):
 		# if x >= 0 and x < self.width and y >= 0 and y < self.height:		
-		if(value > 0.9):
+		if(value > 0.9999):
 			self.mapped[y][x] = 1
+			# self.mapped2.remove((x, y))
 			self.data[y][x][0] = 1
 			self.data[y][x][1] = 0
 			self.data[y][x][2] = 0
-		elif(value < 0.1):
+		elif(value < 0.0001):
 			self.mapped[y][x] = 1
+			# self.mapped2.remove((x, y))
 			self.data[y][x][0] = 0				
 			self.data[y][x][1] = 1 #value * 0.75 + 0.25
 			self.data[y][x][2] = 0
@@ -64,32 +67,16 @@ class ObstacleData(object):
 			for y in range(occSample.height):
 				targetX = x + occSample.x + self.width / 2
 				targetY = y + occSample.y + self.height / 2
-				value = 0.5
+				value = None
 				if(occSample.data[x][y] == 1.0):
-					#obstacle
-					#oij = occupied
-					#P(oij = occupied | sij = occupied) = self.truePositive
-					#P(sij=occupied) = self.data[x][y][2]
-					#P()	#probability observed is accurate
 					value1 = self.truePositive * self.value[targetY][targetX]
 					value2 = (1.0 - self.trueNegative) * (1.0 - self.value[targetY][targetX])
-					# oldValue = self.value[targetY][targetX]
 					value = value1 / (value1 + value2)
-					# print "+ %f to %f" % (oldValue, value)
 				else:
 					value1 = (1.0 - self.truePositive) * self.value[targetY][targetX]
 					value2 = self.trueNegative * (1.0 - self.value[targetY][targetX])
-					# oldValue = self.value[targetY][targetX]
 					value = value1 / (value1 + value2)
-					# print "- %f to %f" % (oldValue, value)
-					#P(oij = not occupied | sij = not occupied) = self.trueNegative
-					#no obstacle
-
-				# print occSample.data[x][y]
-				# self.setSample(targetX, targetY, occSample.data[x][y])
-				# print self.value[targetY][targetX]
 				self.setSample(targetX, targetY, value)
-				# print self.value[targetY][targetX]
 				
 			
 
@@ -153,6 +140,7 @@ class FieldFollowTank(object):
 		if fieldDir != complex(0, 0):
 			fieldDirUnit = fieldDir / abs(fieldDir)
 
+			# self.bzrTank.setSpeed(max(0, (fieldDirUnit.conjugate() * self.bzrTank.direction).real) / 4)
 			self.bzrTank.setSpeed(max(0, (fieldDirUnit.conjugate() * self.bzrTank.direction).real))
 			# self.bzrTank.setSpeed(0)
 			self.bzrTank.rotateTowards(fieldDirUnit)
