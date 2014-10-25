@@ -20,48 +20,50 @@ class ObstacleData(object):
 	def __init__(self, width, height, truePositive, trueNegative):
 		self.width = width
 		self.height = height
-		self.data = zeros((width, height, 3))
-		self.value = zeros((width, height))
-		self.mapped = zeros((width, height))
-		for x in xrange(width):
-			for y in xrange(height):
-				self.value[x][y] = 0.5
+		self.value = zeros((height, width))
+		self.data = zeros((height, width, 3))
+		self.mapped = zeros((height, width))
+		for y in xrange(height):
+			for x in xrange(width):
+				self.value[y][x] = 0.85
 		print self.value
 		self.threshold = 0.5
 		self.gridSize = 50
 		self.truePositive = float(truePositive)
 		self.trueNegative = float(trueNegative)
 
+		self.gridSize = 25
 
-		for x in range(width):
-			for y in range(height):
-				self.data[x][y][0] = 0.25
+
+		for y in range(height):
+			for x in range(width):
+				self.data[y][x][0] = 0.25
 
 	def setSample(self, x, y, value):
-		if x >= 0 and x < self.width and y >= 0 and y < self.width:		
-			if(value > 0.9):
-				self.mapped[x][y] = 1
-				self.data[x][y][0] = 1
-				self.data[x][y][1] = 0
-				self.data[x][y][2] = 0
-			elif(value < 0.1):
-				self.mapped[x][y] = 1
-				self.data[x][y][0] = 0				
-				self.data[x][y][1] = 1 #value * 0.75 + 0.25
-				self.data[x][y][2] = 0
-			else:
-				self.data[x][y][0] = 0
-				self.data[x][y][1] = 0
-				self.data[x][y][2] = 1
-			self.value[x][y] = value
+		# if x >= 0 and x < self.width and y >= 0 and y < self.height:		
+		if(value > 0.9):
+			self.mapped[y][x] = 1
+			self.data[y][x][0] = 1
+			self.data[y][x][1] = 0
+			self.data[y][x][2] = 0
+		elif(value < 0.1):
+			self.mapped[y][x] = 1
+			self.data[y][x][0] = 0				
+			self.data[y][x][1] = 1 #value * 0.75 + 0.25
+			self.data[y][x][2] = 0
+		else:
+			self.data[y][x][0] = 0
+			self.data[y][x][1] = 0
+			self.data[y][x][2] = 1
+		self.value[y][x] = value
 
 	def setOccSample(self, occSample):
-		self.gridSize = occSample.width / 2
+		self.gridSize = int(occSample.width / 4)
 
 		for x in range(occSample.width):
 			for y in range(occSample.height):
-				targetY = x + occSample.x + self.width / 2
-				targetX = y + occSample.y + self.height / 2
+				targetX = x + occSample.x + self.width / 2
+				targetY = y + occSample.y + self.height / 2
 				value = 0.5
 				if(occSample.data[x][y] == 1.0):
 					#obstacle
@@ -69,24 +71,55 @@ class ObstacleData(object):
 					#P(oij = occupied | sij = occupied) = self.truePositive
 					#P(sij=occupied) = self.data[x][y][2]
 					#P()	#probability observed is accurate
-					value1 = self.truePositive * self.value[x][y]
-					value2 = (1.0 - self.trueNegative) * (1.0 - self.value[x][y])
-					oldValue = self.value[x][y]
+					value1 = self.truePositive * self.value[targetY][targetX]
+					value2 = (1.0 - self.trueNegative) * (1.0 - self.value[targetY][targetX])
+					# oldValue = self.value[targetY][targetX]
 					value = value1 / (value1 + value2)
-					print "value change from %f to %f" % (oldValue, value)
+					# print "+ %f to %f" % (oldValue, value)
 				else:
-					value1 = (1.0 - self.truePositive) * self.value[x][y]
-					value2 = self.trueNegative * (1.0 - self.value[x][y])
-					oldValue = self.value[x][y]
+					value1 = (1.0 - self.truePositive) * self.value[targetY][targetX]
+					value2 = self.trueNegative * (1.0 - self.value[targetY][targetX])
+					# oldValue = self.value[targetY][targetX]
 					value = value1 / (value1 + value2)
-					print "value change from %f to %f" % (oldValue, value)
+					# print "- %f to %f" % (oldValue, value)
 					#P(oij = not occupied | sij = not occupied) = self.trueNegative
 					#no obstacle
 
 				# print occSample.data[x][y]
 				# self.setSample(targetX, targetY, occSample.data[x][y])
+				# print self.value[targetY][targetX]
 				self.setSample(targetX, targetY, value)
+				# print self.value[targetY][targetX]
+				
+			
+
+	def isCharted(self, x, y):
+		return self.mapped[int(y) + self.width / 2, int(x) + self.height / 2] == 1
 		
+	def getUnchartedPoint(self, startX, startY):
+
+		gridStepX = self.width / self.gridSize
+		gridStepY = self.height / self.gridSize
+
+		gridOffsetX = int(startX - self.gridSize / 2) / self.gridSize
+		gridOffsetY = int(startY - self.gridSize / 2) / self.gridSize
+
+		#rough check
+		for y in xrange(gridStepY):
+			for x in xrange(gridStepX):
+				xPoint = self.gridSize * ((x + gridOffsetX) % gridStepX)
+				yPoint = self.gridSize * ((y + gridOffsetY) % gridStepY)
+
+				if self.mapped[yPoint, xPoint] != 1:
+					return xPoint - self.width / 2, yPoint - self.height / 2
+
+		#per pixel check
+		for y in xrange(self.height):
+			for x in xrange(self.width):
+				if self.mapped[x, y] != 1:
+					return x - self.width / 2, y - self.height / 2
+
+		return None
 
 def DrawObstacleData(data):
 	# This assumes you are using a numpy array for your grid
@@ -120,8 +153,8 @@ class FieldFollowTank(object):
 		if fieldDir != complex(0, 0):
 			fieldDirUnit = fieldDir / abs(fieldDir)
 
-			# self.bzrTank.setSpeed(max(0, (fieldDirUnit.conjugate() * self.bzrTank.direction).real))
-			self.bzrTank.setSpeed(0)
+			self.bzrTank.setSpeed(max(0, (fieldDirUnit.conjugate() * self.bzrTank.direction).real))
+			# self.bzrTank.setSpeed(0)
 			self.bzrTank.rotateTowards(fieldDirUnit)
 
 		if self.bzrTank.shotsAvailable > 0:
@@ -131,8 +164,8 @@ class GridMappingTank(FieldFollowTank):
 	def __init__(self, bzrTank, game, color, obstacleData):
 		self.field = FieldManager()
 		self.field.addField("world", game.fields)
-		flagPos = game.teams[color].flagPosition
-		self.goalField = GoalField(flagPos.real, flagPos.imag)
+		self.targetPoint = obstacleData.getUnchartedPoint(bzrTank.position.real, bzrTank.position.imag)
+		self.goalField = GoalField(self.targetPoint[0], self.targetPoint[1])
 		self.field.addField("flag", self.goalField)
 
 		super(GridMappingTank,self).__init__(bzrTank, self.field)
@@ -142,21 +175,19 @@ class GridMappingTank(FieldFollowTank):
 
 
 	def update(self):
-		if self.bzrTank.flag == '-':
-			flagPos = self.game.teams[self.targetColor].flagPosition
-			self.goalField.x = flagPos.real
-			self.goalField.y = flagPos.imag
-		else:
-			homePos = self.game.teams[self.game.mycolor].basePosition
-			self.goalField.x = homePos.real
-			self.goalField.y = homePos.imag
-
-		super(GridMappingTank,self).update()
-
 		gridSample = self.bzrTank.sampleGrid()
 
 		if gridSample != None:
 			self.obstacleData.setOccSample(gridSample)
+
+		if self.targetPoint != None and self.obstacleData.isCharted(self.targetPoint[0], self.targetPoint[1]):
+			self.targetPoint = self.obstacleData.getUnchartedPoint(self.bzrTank.position.real, self.bzrTank.position.imag)
+
+			if self.targetPoint != None:
+				self.goalField.x = self.targetPoint[0]
+				self.goalField.y = self.targetPoint[1]
+
+		super(GridMappingTank,self).update()
 
 class SimpleAgent:
 	def __init__(self, hostname, port):
@@ -174,7 +205,7 @@ class SimpleAgent:
 			targetColor = self.game.enemyTeamColors[index % len(self.game.enemyTeamColors)]
 			self.tanks.append(GridMappingTank(tank, self.game, targetColor, self.obstacleData))
 			index = index + 1
-			break
+
 
 
 	def run(self):
