@@ -34,6 +34,12 @@ class FieldManager(object):
             if 'shot' in key:
                 self.fields.pop(key)
 
+    def removeObstacleFields(self):
+        for key in self.fields.keys():
+            if 'bstacle' in key:
+                print "removing field", key
+                self.fields.pop(key)
+
     def calculateField(self, x, y):
         '''
         Calculates the field for the position x, y using all fields

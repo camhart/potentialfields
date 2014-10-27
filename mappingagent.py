@@ -1,6 +1,6 @@
 
 from agent.bzrsocket import BZRSocket, BZRGame
-from potentialfields.fields import GoalField
+from potentialfields.fields import GoalField, ObstacleField, TankField
 from potentialfields.fieldmanager import FieldManager
 import argparse
 import time
@@ -28,7 +28,8 @@ class ObstacleData(object):
 			for x in xrange(width):
 				self.value[y][x] = 0.5
 				# self.mapped2.append((x, y))
-		self.threshold = 0.5
+		self.bottomThreshold = 0.0001
+		self.topThreshold = 0.9999
 		self.gridSize = 50
 		self.truePositive = float(truePositive)
 		self.trueNegative = float(trueNegative)
@@ -42,13 +43,13 @@ class ObstacleData(object):
 
 	def setSample(self, x, y, value):
 		# if x >= 0 and x < self.width and y >= 0 and y < self.height:		
-		if(value > 0.9999):
+		if(value > self.topThreshold):
 			self.mapped[y][x] = 1
 			# self.mapped2.remove((x, y))
 			self.data[y][x][0] = 1
 			self.data[y][x][1] = 0
 			self.data[y][x][2] = 0
-		elif(value < 0.0001):
+		elif(value < self.bottomThreshold):
 			self.mapped[y][x] = 1
 			# self.mapped2.remove((x, y))
 			self.data[y][x][0] = 0				
@@ -145,8 +146,8 @@ class FieldFollowTank(object):
 			# self.bzrTank.setSpeed(0)
 			self.bzrTank.rotateTowards(fieldDirUnit)
 
-		if self.bzrTank.shotsAvailable > 0:
-			self.bzrTank.shoot()
+		# if self.bzrTank.shotsAvailable > 0:
+		# 	self.bzrTank.shoot()
 
 class GridMappingTank(FieldFollowTank):
 	def __init__(self, bzrTank, game, color, obstacleData):
@@ -195,11 +196,86 @@ class SimpleAgent:
 			index = index + 1
 
 
+	def removeObstacleFields(self):
+		self.game.fields.removeObstacleFields()
+		# for ob in self.game.fields.fields.values():
+		# 	if isinstance(ob, ObstacleField):
+		# 		print "obstacle"
+		# 		self.game.fields.fields.remove(ob)
+
+
+	def buildObstacleFields(self, data):
+		checked = []
+		limit = 5
+
+		def findTop(y, x, data):
+			l = 0
+			while(l < limit):
+				if(data.value[y][x] < data.topThreshold and y >= 0):
+					l+=1
+				y-=1
+			return y
+
+		def findBottom(y, x, data):
+			l = 0
+			while(l < limit):
+				if(data.value[y][x] < data.topThreshold and y < self.game.worldSize):
+					l+=1
+				y+=1
+			return y		
+
+		def findRight(y, x, data):
+			l = 0
+			while(l < limit):
+				if(data.value[y][x] < data.topThreshold and x < self.game.worldSize):
+					l+=1
+				x+=1
+			return x
+
+		def findLeft(y, x, data):
+			l = 0
+			while(l < limit):
+				if(data.value[y][x] < data.topThreshold and x >= 0):
+					l+=1
+				x-=1
+			return x
+
+		def obstacleAlreadyMapped(y, x):
+			for check in checked:
+				if(x <= check['right'] and x >= check['left'] and y <= check['bottom'] and y >= check['top']):
+					return True
+			return False
+
+		def buildPoints(pdict):
+			# return [(pdict['left'], pdict['top']), (pdict['right'], pdict['top']), \
+			# 	(pdict['right'], pdict['bottom']), (pdict['left'], pdict['bottom'])]
+			return [(pdict['left'], pdict['bottom']),
+					(pdict['left'], pdict['top']),
+					(pdict['right'], pdict['top']),
+					(pdict['right'], pdict['bottom'])
+					]
+
+		for y in xrange(len(data.mapped)):
+			for x in xrange(len(data.mapped[y])):
+				if(data.mapped[y][x] == 1 and data.value[y][x] >= data.topThreshold and not obstacleAlreadyMapped(y, x)): #its been mapped (it has converged)
+					check = {}
+					check['top'] = findTop(y, x, data)
+					check['bottom'] = findBottom(y, x, data)
+					check['left'] = findLeft(y, x, data)
+					check['right'] = findRight(y, x, data)
+					checked.append(check)
+					obstacle = ObstacleField(buildPoints(check))
+					self.game.fields.addField("ObstacleField (%d, %d)" % (obstacle.x, obstacle.y), obstacle)
+					print "ObstacleField (%d, %d)" % (obstacle.x, obstacle.y)
+
+
+
 
 	def run(self):
 		lastPrint = time.time()
 		imageCount = 0
 		doPrint = False
+		count = 0
 		while True:
 			self.socket.mytanks.update()
 			self.game.update()
@@ -214,6 +290,17 @@ class SimpleAgent:
 
 			DrawObstacleData(self.obstacleData)
 
+			count+=1
+			if(count > 10) :
+				count = 0
+				print "recalculating tangential fields"
+				self.removeObstacleFields()
+				self.buildObstacleFields(self.obstacleData)
+				bzrplot.plot(self.game.fields, "curgame_%d.png" % (imageCount, ))
+				imageCount+=1
+
+
+			print count
 			time.sleep(0)
 
 

@@ -109,6 +109,7 @@ class ObstacleField(TangentField):
 
     def __init__(self, points):
         self.alpha = -20.0
+        # self.alpha = -200.0
         self.rotation = +90.0
         self.x = 0  #center x
         self.y = 0  #center y
@@ -128,6 +129,7 @@ class ObstacleField(TangentField):
             dist = math.sqrt(math.pow(self.x - px, 2) + math.pow(self.y - py, 2))
             if dist > self.range:
                 self.range = dist * 1.25
+                # self.range = dist * 12.5
 
 class ShotField(RepulsionField):
 
