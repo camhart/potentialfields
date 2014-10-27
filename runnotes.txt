@@ -1,2 +1,4 @@
 ./rungame.sh --default-true-positive=.97 --default-true-negative=.90 --occgrid-width=400 --no-report-obstacles
+
+
 python mappingagent.py --host=127.0.0.1 --port=50100

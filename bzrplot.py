@@ -50,7 +50,7 @@ def show_arrows(plot, potential_func, xlim=(-400, 400), ylim=(-400, 400), res=20
             plot.arrow(x, y, dx, dy, head_width=res/7.0, color='red', linewidth=.3)
 
 
-def plot_single(potential_func, obstacles, filename, xlim=(-400, 400), ylim=(-400, 400)):
+def plot_single(potential_func, obstacles, filename, xlim=(0, 800), ylim=(0, 800)):
     """Plot a potential function and some obstacles, and write the resulting
     image to a file"""
     print "Generating", filename

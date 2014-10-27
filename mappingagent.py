@@ -83,31 +83,40 @@ class ObstacleData(object):
 
 	def isCharted(self, x, y):
 		return self.mapped[int(y) + self.width / 2, int(x) + self.height / 2] == 1
-		
-	def getUnchartedPoint(self, startX, startY):
 
+	def randomUnchartedPoint(self):
 		gridStepX = self.width / self.gridSize
 		gridStepY = self.height / self.gridSize
 
-		gridOffsetX = int(startX - self.gridSize / 2) / self.gridSize
-		gridOffsetY = int(startY - self.gridSize / 2) / self.gridSize
+		for tryCount in xrange(10):
+			x = random.randint(0, self.width - 1) - self.width / 2
+			y = random.randint(0, self.height - 1) - self.height / 2
 
-		#rough check
-		for y in xrange(gridStepY):
-			for x in xrange(gridStepX):
-				xPoint = self.gridSize * ((x + gridOffsetX) % gridStepX)
-				yPoint = self.gridSize * ((y + gridOffsetY) % gridStepY)
+			if not self.isCharted(x, y):
+				return x, y
 
-				if self.mapped[yPoint, xPoint] != 1:
-					return xPoint - self.width / 2, yPoint - self.height / 2
+		return None, None
+		
+		
+	def getUnchartedPoint(self, startX, startY):
 
-		#per pixel check
-		for y in xrange(self.height):
-			for x in xrange(self.width):
-				if self.mapped[x, y] != 1:
-					return x - self.width / 2, y - self.height / 2
+		result = None
+		distance = 0
 
-		return None
+		for sample in xrange(15):
+			pointX, pointY = self.randomUnchartedPoint()
+
+			if pointX != None:
+				currentDistance = (startX - pointX) ** 2 + (startY - pointY) ** 2
+
+				if result == None or currentDistance < distance:
+					result = (pointX, pointY)
+					distance = currentDistance
+				
+		if result != None:
+			return result
+		else:
+			return None
 
 def DrawObstacleData(data):
 	# This assumes you are using a numpy array for your grid
@@ -161,6 +170,8 @@ class GridMappingTank(FieldFollowTank):
 		self.game = game
 		self.targetColor = color
 		self.obstacleData = obstacleData
+		self.lastPosition = complex(0, 0)
+		self.speed = 50.0
 
 
 	def update(self):
@@ -168,13 +179,25 @@ class GridMappingTank(FieldFollowTank):
 
 		if gridSample != None:
 			self.obstacleData.setOccSample(gridSample)
+		
+		currentSpeed = abs(self.lastPosition - self.bzrTank.position)
+		self.speed = self.speed * 0.7 + currentSpeed * 0.3
+		self.lastPosition = self.bzrTank.position
+		
+		isStuck = False
+		
+		if self.speed < 5:
+		  print("I'm stuck!")
+		  isStuck = True
 
-		if self.targetPoint != None and self.obstacleData.isCharted(self.targetPoint[0], self.targetPoint[1]):
+		if self.targetPoint == None or isStuck or self.obstacleData.isCharted(self.targetPoint[0], self.targetPoint[1]):
 			self.targetPoint = self.obstacleData.getUnchartedPoint(self.bzrTank.position.real, self.bzrTank.position.imag)
 
 			if self.targetPoint != None:
 				self.goalField.x = self.targetPoint[0]
 				self.goalField.y = self.targetPoint[1]
+				
+			self.speed = 50.0
 
 		super(GridMappingTank,self).update()
 
@@ -265,6 +288,7 @@ class SimpleAgent:
 					check['right'] = findRight(y, x, data)
 					checked.append(check)
 					obstacle = ObstacleField(buildPoints(check))
+					# obstacle.alpha = -10.0
 					self.game.fields.addField("ObstacleField (%d, %d)" % (obstacle.x, obstacle.y), obstacle)
 					print "ObstacleField (%d, %d)" % (obstacle.x, obstacle.y)
 
@@ -296,7 +320,7 @@ class SimpleAgent:
 				print "recalculating tangential fields"
 				self.removeObstacleFields()
 				self.buildObstacleFields(self.obstacleData)
-				bzrplot.plot(self.game.fields, "curgame_%d.png" % (imageCount, ))
+				bzrplot.plot(self.tanks[0].field, "curgame_%d.png" % (imageCount, ))
 				imageCount+=1
 
 
