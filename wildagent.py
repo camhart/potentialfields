@@ -9,24 +9,29 @@ class WildTank:
 	def __init__(self, bzrTank):
 		self.bzrTank = bzrTank
 		# self.nextShootTime = time.clock() + random.uniform(1.5, 2.5)
-		# self.nextTurnTime = time.clock() + random.uniform(6, 8)
+		self.nextTurnTime = time.time() + random.uniform(1, 2)
+		self.nextSpeedTime = time.time() + 2 + random.uniform(1, 2)
 
 		# self.bzrTank.setSpeed(1.0)
 
 	def update(self):
-		# correctedTime = time.clock() * 100
+		correctedTime = time.time()
 
 		# if correctedTime >= self.nextShootTime:
 		# 	self.bzrTank.shoot()
 		# 	self.nextShootTime = correctedTime + random.uniform(1.5, 2.5)
 
-		# if correctedTime >= self.nextTurnTime:
-		# 	self.bzrTank.rotateTowards(self.bzrTank.direction * cmath.rect(1, cmath.pi / 3))
-		# 	self.nextTurnTime = correctedTime + random.uniform(6, 8)
+		if correctedTime >= self.nextTurnTime:
+			# self.bzrTank.rotateTowards(self.bzrTank.direction * cmath.rect(1, cmath.pi / random.randint(1, 5)))
+			# print(self.bzrTank.direction * cmath.rect(1, cmath.pi / 4))
+			# print(cmath.rect(1, cmath.pi / 4))
+			# print(cmath.pi / 4)
+			self.bzrTank.rotateTowards(self.bzrTank.direction * cmath.rect(1, cmath.pi / random.random()))
+			self.nextTurnTime = correctedTime + random.uniform(1, 2)
 
-		# if self.bzrTank.velocity == complex(0, 0):
-		# 	self.bzrTank.setSpeed(1.0)
-		pass
+		elif correctedTime >= self.nextSpeedTime:
+			self.bzrTank.setSpeed(random.random())
+			self.nextSpeedTime = correctedTime + random.uniform(1, 2)
 
 
 class WildAgent:

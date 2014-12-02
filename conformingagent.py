@@ -5,13 +5,15 @@ import time
 import cmath
 import random
 
+TURN_TIME = 15	#time to wait until agent turns
+
 class ConformingTank:
 	def __init__(self, bzrTank):
 		self.bzrTank = bzrTank
-		self.nextShootTime = time.clock() + random.uniform(1.5, 2.5)
-		self.nextTurnTime = time.clock() + random.uniform(6, 8)
+		# self.nextShootTime = time.clock() + random.uniform(1.5, 2.5)
+		self.nextTurnTime = time.time()	#15 seconds until turn
 
-		self.bzrTank.setSpeed(1.0)
+		self.bzrTank.setSpeed(0.0)
 
 	def update(self):
 		# correctedTime = time.clock() * 100
@@ -20,12 +22,16 @@ class ConformingTank:
 		# 	self.bzrTank.shoot()
 		# 	self.nextShootTime = correctedTime + random.uniform(1.5, 2.5)
 
-		# if correctedTime >= self.nextTurnTime:
-		# 	self.bzrTank.rotateTowards(self.bzrTank.direction * cmath.rect(1, cmath.pi / 3))
-		# 	self.nextTurnTime = correctedTime + random.uniform(6, 8)
-
-		# if self.bzrTank.velocity == complex(0, 0):
+		if time.time() >= self.nextTurnTime:
+			self.bzrTank.rotateTowards(self.bzrTank.direction * cmath.rect(1, cmath.pi / 2.5))
+			self.nextTurnTime = time.time() + TURN_TIME
+			self.bzrTank.setSpeed(0.0)
+		
+		# else:
 		# 	self.bzrTank.setSpeed(1.0)
+
+		if self.bzrTank.velocity == complex(0, 0):
+			self.bzrTank.setSpeed(1.0)
 		pass
 
 
