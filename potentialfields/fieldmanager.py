@@ -37,7 +37,7 @@ class FieldManager(object):
     def removeObstacleFields(self):
         for key in self.fields.keys():
             if 'bstacle' in key:
-                print "removing field", key
+                # print "removing field", key
                 self.fields.pop(key)
 
     def calculateField(self, x, y):

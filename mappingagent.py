@@ -42,6 +42,8 @@ class ObstacleData(object):
 				self.data[y][x][0] = 0.25
 
 	def setSample(self, x, y, value):
+		sampleX = 400
+		sampleY = 400
 		# if x >= 0 and x < self.width and y >= 0 and y < self.height:		
 		if(value > self.topThreshold):
 			self.mapped[y][x] = 1
@@ -59,6 +61,9 @@ class ObstacleData(object):
 			self.data[y][x][0] = 0
 			self.data[y][x][1] = 0
 			self.data[y][x][2] = 1
+
+		if(y == sampleY and x == sampleX):
+			print "x (%d), y (%d) = %.8f\n" % (x, y, value)
 		self.value[y][x] = value
 
 	def setOccSample(self, occSample):
@@ -187,7 +192,7 @@ class GridMappingTank(FieldFollowTank):
 		isStuck = False
 		
 		if self.speed < 5:
-		  print("I'm stuck!")
+		  # print("I'm stuck!")
 		  isStuck = True
 
 		if self.targetPoint == None or isStuck or self.obstacleData.isCharted(self.targetPoint[0], self.targetPoint[1]):
@@ -290,7 +295,7 @@ class SimpleAgent:
 					obstacle = ObstacleField(buildPoints(check))
 					# obstacle.alpha = -10.0
 					self.game.fields.addField("ObstacleField (%d, %d)" % (obstacle.x, obstacle.y), obstacle)
-					print "ObstacleField (%d, %d)" % (obstacle.x, obstacle.y)
+					# print "ObstacleField (%d, %d)" % (obstacle.x, obstacle.y)
 
 
 
@@ -317,14 +322,14 @@ class SimpleAgent:
 			count+=1
 			if(count > 10) :
 				count = 0
-				print "recalculating tangential fields"
+				# print "recalculating tangential fields"
 				self.removeObstacleFields()
 				self.buildObstacleFields(self.obstacleData)
-				bzrplot.plot(self.tanks[0].field, "curgame_%d.png" % (imageCount, ))
-				imageCount+=1
+				# bzrplot.plot(self.tanks[0].field, "curgame_%d.png" % (imageCount, ))
+				# imageCount+=1
 
 
-			print count
+			# print count
 			time.sleep(0)
 
 
