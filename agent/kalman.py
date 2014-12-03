@@ -87,6 +87,9 @@ class Filter:
 			[0, 0, 0, 0, 0, 100]
 		])
 
+	def ResetPosition(self, positionX, positionY):
+		self.trackedPosition = numpy.matrix([[positionX], [0], [0], [positionY], [0], [0]])
+
 	# sampleX and sampleY are the samples x and y position of the tank
 	# timestep is the time, in seconds, between this sample and the last sample
 	def AddSample(self, sampleX, sampleY, timestep):

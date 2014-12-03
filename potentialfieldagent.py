@@ -9,9 +9,10 @@ import random
 import bzrplot
 
 class FieldFollowTank(object):
-	def __init__(self, bzrTank, field):
+	def __init__(self, bzrTank, field, game):
 		self.bzrTank = bzrTank
 		self.field = field
+		self.game = game
 
 	def update(self):
 		fieldX, fieldY = self.field.calculateField(self.bzrTank.position.real, self.bzrTank.position.imag)
@@ -23,7 +24,9 @@ class FieldFollowTank(object):
 			self.bzrTank.setSpeed(max(0, (fieldDirUnit.conjugate() * self.bzrTank.direction).real))
 			self.bzrTank.rotateTowards(fieldDirUnit)
 
-		if self.bzrTank.shotsAvailable > 0:
+		willHit = self.game.willHitEnemy(self.bzrTank)
+
+		if self.bzrTank.shotsAvailable > 0 and willHit:
 			self.bzrTank.shoot()
 
 class CaptureFlagTank(FieldFollowTank):
@@ -34,7 +37,7 @@ class CaptureFlagTank(FieldFollowTank):
 		self.goalField = GoalField(flagPos.real, flagPos.imag)
 		self.field.addField("flag", self.goalField)
 
-		super(CaptureFlagTank,self).__init__(bzrTank, self.field)
+		super(CaptureFlagTank,self).__init__(bzrTank, self.field, game)
 		self.game = game
 		self.targetColor = color
 

@@ -5,6 +5,7 @@ import time
 import math
 import cmath
 import bzrplot
+import kalman
 
 # import potentialfields.ObstacleField.ObstacleField
 from potentialfields.fieldmanager import FieldManager
@@ -128,12 +129,27 @@ class BZREnemyTank(object):
 		self.flag = None
 		self.position = complex(0, 0)
 		self.angle = 0
+		self.kalmanFilter = kalman.Filter()
+		self.lastTime = time.clock()
+		self.wasDead = True
 
 	def updateParameters(self, responseLine):
 		self.status = responseLine.parameters[2]
 		self.flag = responseLine.parameters[3]
 		self.position = complex(float(responseLine.parameters[4]), float(responseLine.parameters[5]))
 		self.angle = responseLine.parameters[6]
+
+		isDead = self.status == "dead"
+
+		if self.wasDead and not isDead:
+			self.kalmanFilter.ResetPosition(self.position.real, self.position.imag)
+			self.lastTime = time.clock()
+		else:
+			thisTime = time.clock()
+			self.kalmanFilter.AddSample(self.position.real, self.position.imag, thisTime - self.lastTime)
+			self.lastTime = thisTime
+
+		self.wasDead = isDead
 
 class BZRTeam(object):
 	def __init__(self):
@@ -167,20 +183,20 @@ class BZRGame(object):
 		self.buildObstacles()
 
 	def willHitEnemy(self, fireingTank):
-		
+
 		for color in self.teams:
 			if color != self.mycolor:
 				team = self.teams[color]
 				for tankid in team.tanks:
 					enemyTank = team.tanks[tankid]
-					
+					if self.willHitTarget(fireingTank, enemyTank.kalmanFilter):
+						return True
 
 		return False
 
 	def willHitTarget(self, fireingTank, targetKalmanFilter):
-
 		return targetKalmanFilter.WillProjectileHit(
-			fireingTank.position.real, fireingTank.position,imag,
+			fireingTank.position.real, fireingTank.position.imag,
 			fireingTank.direction.real * self.shotSpeed, fireingTank.direction.imag * self.shotSpeed, 
 			self.tankRadius, self.shotLifetime)
 
