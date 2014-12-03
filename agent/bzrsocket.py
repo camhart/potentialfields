@@ -158,12 +158,30 @@ class BZRGame(object):
 		self.otherConstants = {}
 
 		self.teams = {}
-			# 'color' : BZRTeam object
+		# 'color' : BZRTeam object
 
 		#Build Obstacles
 		self.buildTeams()
 		self.buildConstants()
 		self.buildObstacles()
+
+	def willHitEnemy(self, fireingTank):
+		
+		for color in self.teams:
+			if color != self.mycolor:
+				team = self.teams[color]
+				for tankid in team.tanks:
+					enemyTank = team.tanks[tankid]
+					
+
+		return False
+
+	def willHitTarget(self, fireingTank, targetKalmanFilter):
+
+		return targetKalmanFilter.WillProjectileHit(
+			fireingTank.position.real, fireingTank.position,imag,
+			fireingTank.direction.real * self.shotSpeed, fireingTank.direction.imag * self.shotSpeed, 
+			self.tankRadius, self.shotLifetime)
 
 	def buildObstacles(self):
 		obstacleResponse = self.socket.issueCommand("obstacles", True)
@@ -245,6 +263,10 @@ class BZRGame(object):
 				self.trueNegative = float(constants[i].parameters[1])
 			else:
 				self.otherConstants[constantName] = constants[i].parameters[1]
+
+		self.shotSpeed = float(self.otherConstants["shotspeed"])
+		self.shotLifetime = float(self.otherConstants["shotrange"]) / self.shotSpeed
+		self.tankRadius = float(self.otherConstants["tankradius"])
 
 		self.enemyTeamColors.remove(self.mycolor)
 
