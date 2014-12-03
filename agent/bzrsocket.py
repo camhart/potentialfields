@@ -5,6 +5,7 @@ import time
 import math
 import cmath
 import bzrplot
+
 # import potentialfields.ObstacleField.ObstacleField
 from potentialfields.fieldmanager import FieldManager
 from potentialfields.fields import GoalField, ShotField, ObstacleField, TankField
