@@ -1,9 +1,5 @@
 add random field to potentialfields agents
 
-create enemy tank tracker class at agent level
-	map tankid -> filter
-	update method
-		updates tanks with new sample
-
-	getNearestTank(curX, curY)
-		return enemytank class with filter and other info
+plotting stuff
+	?
+	?

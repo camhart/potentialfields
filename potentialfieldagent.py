@@ -1,6 +1,6 @@
 
 from agent.bzrsocket import BZRSocket, BZRGame
-from potentialfields.fields import GoalField
+from potentialfields.fields import GoalField, RandomField
 from potentialfields.fieldmanager import FieldManager
 import argparse
 import time
@@ -9,9 +9,11 @@ import random
 import bzrplot
 
 class FieldFollowTank(object):
-	def __init__(self, bzrTank, field, game):
+	def __init__(self, bzrTank, field, game, useRandomField=False):
 		self.bzrTank = bzrTank
 		self.field = field
+		if(useRandomField):
+			self.field.addField("random", RandomField())
 		self.game = game
 
 	def update(self):
@@ -30,14 +32,15 @@ class FieldFollowTank(object):
 			self.bzrTank.shoot()
 
 class CaptureFlagTank(FieldFollowTank):
-	def __init__(self, bzrTank, game, color):
+	def __init__(self, bzrTank, game, color, useRandomField=False):
 		self.field = FieldManager()
 		self.field.addField("world", game.fields)
 		flagPos = game.teams[color].flagPosition
 		self.goalField = GoalField(flagPos.real, flagPos.imag)
 		self.field.addField("flag", self.goalField)
 
-		super(CaptureFlagTank,self).__init__(bzrTank, self.field, game)
+		super(CaptureFlagTank,self).__init__(bzrTank, self.field, game, True)
+
 		self.game = game
 		self.targetColor = color
 
@@ -64,7 +67,7 @@ class SimpleAgent:
 		self.tanks = []
 		for tank in self.socket.mytanks.tanks:
 			targetColor = self.game.enemyTeamColors[index % len(self.game.enemyTeamColors)]
-			self.tanks.append(CaptureFlagTank(tank, self.game, targetColor))
+			self.tanks.append(CaptureFlagTank(tank, self.game, targetColor, True))
 			index = index + 1
 
 

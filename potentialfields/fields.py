@@ -1,9 +1,20 @@
-import math
+import math, random
 
 class PotentialField(object):
 
     def calculateField(self, x, y):
         raise NotImplemented("not implemented")
+
+class RandomField(PotentialField):
+    def __init__(self, alpha=10.0):
+        self.alpha = alpha
+
+    def calculateField(self, x, y):
+        x = random.random() * self.alpha
+        y = random.random() * self.alpha
+        x = x if random.random() > 0.5 else -x;
+        y = y if random.random() > 0.5 else -y;
+        return (x, y)
 
 class GoalField(PotentialField):
     '''
