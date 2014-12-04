@@ -19,7 +19,7 @@ identity6x6 = numpy.matrix([
 	[0, 0, 0, 0, 0, 1]
 	])
 
-zeroAccelerationTolerance = 0.01
+zeroAccelerationTolerance = 1000
 zeroTolerence = 0.0001
 
 def TimeTillHit(projPos, projVel, targetPos, targetVel, targetAccel):
@@ -137,6 +137,8 @@ class Filter:
 			
 		futureOffX = futureX - futureProjX
 		futureOffY = futureY - futureProjY
+
+		print(math.sqrt(futureOffX * futureOffX + futureOffY * futureOffY))
 
 		return futureOffX * futureOffX + futureOffY * futureOffY <= hitRadius * hitRadius
 
