@@ -1,6 +1,6 @@
 
 from agent.bzrsocket import BZRSocket, BZRGame
-from potentialfields.fields import GoalField
+from potentialfields.fields import GoalField, RandomField
 from potentialfields.fieldmanager import FieldManager
 import argparse
 import time
@@ -9,10 +9,12 @@ import random
 import bzrplot
 
 class FieldFollowTank(object):
-	def __init__(self, bzrTank, field, useRandomField=False):
+	def __init__(self, bzrTank, field, game, useRandomField=False):
 		self.bzrTank = bzrTank
 		self.field = field
-		self.field.addField()
+		if(useRandomField):
+			self.field.addField(RandomField())
+		self.game = game
 
 	def update(self):
 		fieldX, fieldY = self.field.calculateField(self.bzrTank.position.real, self.bzrTank.position.imag)
@@ -24,7 +26,9 @@ class FieldFollowTank(object):
 			self.bzrTank.setSpeed(max(0, (fieldDirUnit.conjugate() * self.bzrTank.direction).real))
 			self.bzrTank.rotateTowards(fieldDirUnit)
 
-		if self.bzrTank.shotsAvailable > 0:
+		willHit = self.game.willHitEnemy(self.bzrTank)
+
+		if self.bzrTank.shotsAvailable > 0 and willHit:
 			self.bzrTank.shoot()
 
 class CaptureFlagTank(FieldFollowTank):
@@ -35,7 +39,8 @@ class CaptureFlagTank(FieldFollowTank):
 		self.goalField = GoalField(flagPos.real, flagPos.imag)
 		self.field.addField("flag", self.goalField)
 
-		super(CaptureFlagTank,self).__init__(bzrTank, self.field, True)
+		super(CaptureFlagTank,self).__init__(bzrTank, self.field, game, True)
+
 		self.game = game
 		self.targetColor = color
 
