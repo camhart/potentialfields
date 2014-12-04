@@ -13,7 +13,7 @@ class FieldFollowTank(object):
 		self.bzrTank = bzrTank
 		self.field = field
 		if(useRandomField):
-			self.field.addField(RandomField())
+			self.field.addField("random", RandomField())
 		self.game = game
 
 	def update(self):

@@ -6,7 +6,7 @@ class PotentialField(object):
         raise NotImplemented("not implemented")
 
 class RandomField(PotentialField):
-    def __init__(self, alpha=5.0):
+    def __init__(self, alpha=10.0):
         self.alpha = alpha
 
     def calculateField(self, x, y):
