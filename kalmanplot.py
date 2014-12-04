@@ -21,9 +21,10 @@ def plotPositions(x, y, color, widthMin=None, widthMax=None, heightMin=None, hei
 	plt.scatter(x, y, c=color)
 
 def plotFilterPredictions(px, py, sx, sy):
-	plotPositions([px], [py], 'p')
-	plotPositions([sx], [sy], 'g', -400, 400, -400, 400)
-	# plt.show()
+	plotPositions([sx], [sy], 'b', -400, 400, -400, 400)
+	plotPositions([px], [py], 'r', -400, 400, -400, 400)
+	plt.draw()
+	plt.show(block=False)
 
 if __name__ == '__main__':
 

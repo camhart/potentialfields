@@ -1,6 +1,8 @@
 import numpy
 import math
 
+from kalmanplot import plotFilterPredictions
+
 # matrix H
 selectionMatrix = numpy.matrix([
 	[1, 0, 0, 0, 0, 0],
@@ -106,6 +108,8 @@ class Filter:
 		sampleAsMatrix = numpy.matrix([[sampleX],[sampleY]])
 		self.trackedPosition = predictedPosition + k * (sampleAsMatrix - selectionMatrix * predictedPosition)
 		self.trackedCovarianceMatrix = (identity6x6 - k * selectionMatrix) * modifiedCovariance
+
+		plotFilterPredictions(self.trackedPosition.item(0), self.trackedPosition.item(3), sampleX, sampleY)
 
 	def Predict(self, futureTime):
 		result = TimestepMatrix(futureTime, 0) * self.trackedPosition
