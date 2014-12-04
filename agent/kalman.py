@@ -82,11 +82,11 @@ class Filter:
 		# matrix sigma_x
 		self.uncertaintyDistribution = numpy.matrix([
 			[0.1, 0, 0, 0, 0, 0],
-			[0, 0.1, 0, 0, 0, 0],
-			[0, 0, 100, 0, 0, 0],
+			[0, 0.01, 0, 0, 0, 0],
+			[0, 0, 0.01, 0, 0, 0],
 			[0, 0, 0, 0.1, 0, 0],
-			[0, 0, 0, 0, 0.1, 0],
-			[0, 0, 0, 0, 0, 100]
+			[0, 0, 0, 0, 0.01, 0],
+			[0, 0, 0, 0, 0, 0.01]
 		])
 
 	def ResetPosition(self, positionX, positionY):
@@ -137,8 +137,6 @@ class Filter:
 			
 		futureOffX = futureX - futureProjX
 		futureOffY = futureY - futureProjY
-
-		print(math.sqrt(futureOffX * futureOffX + futureOffY * futureOffY))
 
 		return futureOffX * futureOffX + futureOffY * futureOffY <= hitRadius * hitRadius
 
