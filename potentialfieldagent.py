@@ -9,9 +9,10 @@ import random
 import bzrplot
 
 class FieldFollowTank(object):
-	def __init__(self, bzrTank, field):
+	def __init__(self, bzrTank, field, useRandomField=False):
 		self.bzrTank = bzrTank
 		self.field = field
+		self.field.addField()
 
 	def update(self):
 		fieldX, fieldY = self.field.calculateField(self.bzrTank.position.real, self.bzrTank.position.imag)
@@ -27,14 +28,14 @@ class FieldFollowTank(object):
 			self.bzrTank.shoot()
 
 class CaptureFlagTank(FieldFollowTank):
-	def __init__(self, bzrTank, game, color):
+	def __init__(self, bzrTank, game, color, useRandomField=False):
 		self.field = FieldManager()
 		self.field.addField("world", game.fields)
 		flagPos = game.teams[color].flagPosition
 		self.goalField = GoalField(flagPos.real, flagPos.imag)
 		self.field.addField("flag", self.goalField)
 
-		super(CaptureFlagTank,self).__init__(bzrTank, self.field)
+		super(CaptureFlagTank,self).__init__(bzrTank, self.field, True)
 		self.game = game
 		self.targetColor = color
 
@@ -61,7 +62,7 @@ class SimpleAgent:
 		self.tanks = []
 		for tank in self.socket.mytanks.tanks:
 			targetColor = self.game.enemyTeamColors[index % len(self.game.enemyTeamColors)]
-			self.tanks.append(CaptureFlagTank(tank, self.game, targetColor))
+			self.tanks.append(CaptureFlagTank(tank, self.game, targetColor, True))
 			index = index + 1
 
 
