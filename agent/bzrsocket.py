@@ -203,7 +203,7 @@ class BZRGame(object):
 	def buildObstacles(self):
 		obstacleResponse = self.socket.issueCommand("obstacles", True)
 
-		if obstacleResponse[0].response == "fail":
+		if len(obstacleResponse) == 0 or obstacleResponse[0].response == "fail":
 			return []
 
 		for rl in obstacleResponse:
