@@ -18,7 +18,7 @@ def plotPositions(x, y, color, widthMin=None, widthMax=None, heightMin=None, hei
 	plt.ylim(ymax = heightMax)
 	plt.ylim(ymin = heightMin)
 
-	plt.scatter(x, y, c=color)
+	plt.scatter(x, y, c=color, s=2.0, marker='s', edgecolors='none')
 
 def plotFilterPredictions(px, py, sx, sy):
 	plotPositions([sx], [sy], 'b', -400, 400, -400, 400)
