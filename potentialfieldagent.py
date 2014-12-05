@@ -39,6 +39,10 @@ class CaptureFlagTank(FieldFollowTank):
 		self.goalField = GoalField(flagPos.real, flagPos.imag)
 		self.field.addField("flag", self.goalField)
 
+		self.flagRepulsor = None
+
+		self.lastFlagPos = complex(0, 0)
+
 		super(CaptureFlagTank,self).__init__(bzrTank, self.field, game, True)
 
 		self.game = game
@@ -46,12 +50,15 @@ class CaptureFlagTank(FieldFollowTank):
 
 
 	def update(self):
+		team = self.game.teams[self.targetColor]
+
 		if self.bzrTank.flag == '-':
-			flagPos = self.game.teams[self.targetColor].flagPosition
+			flagPos = team.flagPosition
 			self.goalField.x = flagPos.real
 			self.goalField.y = flagPos.imag
+			self.lastFlagPos = flagPos
 		else:
-			homePos = self.game.teams[self.game.mycolor].basePosition
+			homePos = team.basePosition
 			self.goalField.x = homePos.real
 			self.goalField.y = homePos.imag
 
