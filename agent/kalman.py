@@ -79,14 +79,26 @@ class Filter:
 			[0, 0, 0, 0, 0, 0.1]
 			])
 
+		positionCoef = 0.01
+		velCoef = 0.1
+		acellCoef = 1
+
+		allScalar = 0.01
+	
+		positionCoef *= allScalar
+		velCoef *= allScalar
+		acellCoef *= allScalar
+
 		# matrix sigma_x
 		self.uncertaintyDistribution = numpy.matrix([
-			[0.001, 0, 0, 0, 0, 0],
-			[0, 0.001, 0, 0, 0, 0],
-			[0, 0, 0.001, 0, 0, 0],
-			[0, 0, 0, 0.001, 0, 0],
-			[0, 0, 0, 0, 0.001, 0],
-			[0, 0, 0, 0, 0, 0.001]
+
+			[positionCoef, 0, 0, 0, 0, 0],
+			[0, velCoef, 0, 0, 0, 0],
+			[0, 0, acellCoef, 0, 0, 0],
+			[0, 0, 0, positionCoef, 0, 0],
+			[0, 0, 0, 0, velCoef, 0],
+			[0, 0, 0, 0, 0, acellCoef]
+
 		])
 
 	def ResetPosition(self, positionX, positionY):
@@ -110,8 +122,10 @@ class Filter:
 		self.trackedCovarianceMatrix = (identity6x6 - k * selectionMatrix) * modifiedCovariance
 
 		# plotFilterPredictions(self.trackedPosition.item(0), self.trackedPosition.item(3), sampleX, sampleY)
-		fx, fy = self.Predict(3.5)
-		plotFilterPredictions(fx, fy, sampleX, sampleY)
+		# fx, fy = self.Predict(3.5)
+		# plotFilterPredictions(fx, fy, sampleX, sampleY)
+		# futureX, futureY = self.Predict(3.5)
+
 
 	def Predict(self, futureTime):
 		result = TimestepMatrix(futureTime, 0) * self.trackedPosition
@@ -140,7 +154,7 @@ class Filter:
 		futureOffX = futureX - futureProjX
 		futureOffY = futureY - futureProjY
 
-		print(math.sqrt(futureOffX * futureOffX + futureOffY * futureOffY))
+		#plotFilterPredictions(futureX, futureY, futureProjX, futureProjY)
 
 		return futureOffX * futureOffX + futureOffY * futureOffY <= hitRadius * hitRadius
 

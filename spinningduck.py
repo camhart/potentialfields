@@ -16,22 +16,21 @@ class SpinningDuckTank:
 
 	def update(self):
 		willHit = self.game.willHitEnemy(self.bzrTank)
+		if self.bzrTank.shotsAvailable > 0 and willHit:
+			self.bzrTank.shoot()
 
 		sideRotation = cmath.rect(1.0, cmath.pi * 0.25) * self.bzrTank.direction
-		offsetToOrigin = -self.bzrTank.position
+		offsetToOrigin = complex(0, -400)-self.bzrTank.position
 
 		if abs(offsetToOrigin) < 100:
 			self.bzrTank.setSpeed(0.0)
-			self.bzrTank.setAngularVelocity(-0.2)
+			self.bzrTank.rotateTowards(cmath.rect(1, cmath.pi * 0.75))
 		else:
 			self.bzrTank.setSpeed(1.0)
 			if abs(offsetToOrigin) > 0:
 				offsetToOrigin /= abs(offsetToOrigin)
 
 			self.bzrTank.setAngularVelocity(sideRotation.real * offsetToOrigin.real + sideRotation.imag * offsetToOrigin.imag)
-
-			if self.bzrTank.shotsAvailable > 0 and willHit:
-				self.bzrTank.shoot()
 
 class SimpleAgent:
 	def __init__(self, hostname, port):

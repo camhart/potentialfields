@@ -66,13 +66,13 @@ class SimpleAgent:
 		index = 0
 		self.tanks = []
 		for tank in self.socket.mytanks.tanks:
-			i = index % len(self.game.enemyTeamColors + 1)
+			i = index % (len(self.game.enemyTeamColors) + 1)
 
 			if(i == len(self.game.enemyTeamColors)):
 				targetColor = self.game.mycolor
-				self.tanks.append(CaptureFlagTank(tank, self.game, targetColor, True))
+				self.tanks.append(DefendFlagTank(tank, self.game, targetColor, True))
 			else:	
-				targetColor = self.game.enemyTeamColors[]
+				targetColor = self.game.enemyTeamColors[i]
 				self.tanks.append(CaptureFlagTank(tank, self.game, targetColor, True))
 			index = index + 1
 
