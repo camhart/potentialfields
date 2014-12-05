@@ -57,6 +57,33 @@ class CaptureFlagTank(FieldFollowTank):
 
 		super(CaptureFlagTank,self).update()
 
+defendDistance = 100
+
+class DefendFlagTank:
+	def __init__(self, bzrTank, game, color):
+		self.bzrTank = bzrTank
+		self.game = game
+		self.targetColor = color
+
+
+	def update(self):
+		flagPos = self.game.teams[self.targetColor].flagPosition
+		flagOffset = flagPos - self.bzrTank.position
+		flagDistance = abs(flagOffset)
+
+		self.bzrTank.rotateTowards(flagOffset / flagDistance)
+
+		willHit = self.game.willHitEnemy(self.bzrTank)
+
+		if self.bzrTank.shotsAvailable > 0 and willHit:
+			self.bzrTank.shoot()
+
+		if flagDistance > defendDistance:
+			self.bzrTank.setSpeed(1.0)
+		else:
+			self.bzrTank.setSpeed(-1.0)
+			
+
 class SimpleAgent:
 	def __init__(self, hostname, port):
 
