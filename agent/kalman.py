@@ -81,12 +81,12 @@ class Filter:
 
 		# matrix sigma_x
 		self.uncertaintyDistribution = numpy.matrix([
-			[0.1, 0, 0, 0, 0, 0],
-			[0, 0.1, 0, 0, 0, 0],
-			[0, 0, 100, 0, 0, 0],
-			[0, 0, 0, 0.1, 0, 0],
-			[0, 0, 0, 0, 0.1, 0],
-			[0, 0, 0, 0, 0, 100]
+			[0.001, 0, 0, 0, 0, 0],
+			[0, 0.001, 0, 0, 0, 0],
+			[0, 0, 0.001, 0, 0, 0],
+			[0, 0, 0, 0.001, 0, 0],
+			[0, 0, 0, 0, 0.001, 0],
+			[0, 0, 0, 0, 0, 0.001]
 		])
 
 	def ResetPosition(self, positionX, positionY):
@@ -109,7 +109,9 @@ class Filter:
 		self.trackedPosition = predictedPosition + k * (sampleAsMatrix - selectionMatrix * predictedPosition)
 		self.trackedCovarianceMatrix = (identity6x6 - k * selectionMatrix) * modifiedCovariance
 
-		plotFilterPredictions(self.trackedPosition.item(0), self.trackedPosition.item(3), sampleX, sampleY)
+		# plotFilterPredictions(self.trackedPosition.item(0), self.trackedPosition.item(3), sampleX, sampleY)
+		fx, fy = self.Predict(3.5)
+		plotFilterPredictions(fx, fy, sampleX, sampleY)
 
 	def Predict(self, futureTime):
 		result = TimestepMatrix(futureTime, 0) * self.trackedPosition

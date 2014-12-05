@@ -9,7 +9,7 @@ class WildTank:
 	def __init__(self, bzrTank):
 		self.bzrTank = bzrTank
 		# self.nextShootTime = time.clock() + random.uniform(1.5, 2.5)
-		self.nextTurnTime = time.time() + random.uniform(1, 2)
+		self.nextTurnTime = time.time() + random.uniform(1, 15)
 		self.nextSpeedTime = time.time() + 2 + random.uniform(1, 2)
 
 		# self.bzrTank.setSpeed(1.0)
@@ -27,7 +27,7 @@ class WildTank:
 			# print(cmath.rect(1, cmath.pi / 4))
 			# print(cmath.pi / 4)
 			self.bzrTank.rotateTowards(self.bzrTank.direction * cmath.rect(1, cmath.pi / random.random()))
-			self.nextTurnTime = correctedTime + random.uniform(1, 2)
+			self.nextTurnTime = correctedTime + random.uniform(1, 12)
 
 		elif correctedTime >= self.nextSpeedTime:
 			self.bzrTank.setSpeed(random.random())
