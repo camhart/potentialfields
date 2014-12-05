@@ -57,7 +57,8 @@ class CaptureFlagTank(FieldFollowTank):
 
 		super(CaptureFlagTank,self).update()
 
-defendDistance = 100
+defendDistance = 50
+baseFlagDistance = 100
 
 class DefendFlagTank:
 	def __init__(self, bzrTank, game, color):
@@ -75,10 +76,17 @@ class DefendFlagTank:
 
 		willHit = self.game.willHitEnemy(self.bzrTank)
 
-		if self.bzrTank.shotsAvailable > 0 and willHit:
+		team = self.game.teams[self.targetColor]
+
+		if self.bzrTank.shotsAvailable > 0 and (willHit or team.flagCarriedBy != "none"):
 			self.bzrTank.shoot()
 
-		if flagDistance > defendDistance:
+		targetDistance = defendDistance
+
+		if abs(team.flagPosition - team.basePosition) > baseFlagDistance:
+			targetDistance = 0
+
+		if flagDistance > targetDistance:
 			self.bzrTank.setSpeed(1.0)
 		else:
 			self.bzrTank.setSpeed(-1.0)
