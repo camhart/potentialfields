@@ -97,7 +97,7 @@ class SimpleAgent:
 
 			if(i == len(self.game.enemyTeamColors)):
 				targetColor = self.game.mycolor
-				self.tanks.append(DefendFlagTank(tank, self.game, targetColor, True))
+				self.tanks.append(DefendFlagTank(tank, self.game, targetColor))
 			else:	
 				targetColor = self.game.enemyTeamColors[i]
 				self.tanks.append(CaptureFlagTank(tank, self.game, targetColor, True))
