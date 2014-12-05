@@ -1,6 +1,6 @@
 
 from agent.bzrsocket import BZRSocket, BZRGame
-from potentialfields.fields import GoalField, RandomField
+from potentialfields.fields import GoalField, RandomField, RepulsionField
 from potentialfields.fieldmanager import FieldManager
 import argparse
 import time
@@ -39,15 +39,16 @@ class CaptureFlagTank(FieldFollowTank):
 		self.goalField = GoalField(flagPos.real, flagPos.imag)
 		self.field.addField("flag", self.goalField)
 
-		self.flagRepulsor = None
+		self.flagRepulsor = RepulsionField(-1, -1)
+		self.field.addField("flagRepulsor", self.flagRepulsor)
 
 		self.lastFlagPos = complex(0, 0)
+		# self.field.addField("teamField");
 
 		super(CaptureFlagTank,self).__init__(bzrTank, self.field, game, True)
 
 		self.game = game
 		self.targetColor = color
-
 
 	def update(self):
 		team = self.game.teams[self.targetColor]
@@ -57,10 +58,15 @@ class CaptureFlagTank(FieldFollowTank):
 			self.goalField.x = flagPos.real
 			self.goalField.y = flagPos.imag
 			self.lastFlagPos = flagPos
+
+			self.flagRepulsor.x = team.basePosition.real
+			self.flagRepulsor.y = team.basePosition.imag
 		else:
-			homePos = team.basePosition
+			homePos = self.game.teams[self.game.mycolor].basePosition
 			self.goalField.x = homePos.real
 			self.goalField.y = homePos.imag
+			self.flagRepulsor.x = self.lastFlagPos.real
+			self.flagRepulsor.y = self.lastFlagPos.imag
 
 		super(CaptureFlagTank,self).update()
 
@@ -108,6 +114,7 @@ class SimpleAgent:
 		index = 0
 		self.tanks = []
 		for tank in self.socket.mytanks.tanks:
+			self.game.fields.addField("mytank_%d" % (index, ), RepulsionField(-1, -1))
 			i = index % (len(self.game.enemyTeamColors) + 1)
 
 			if(i == len(self.game.enemyTeamColors)):
@@ -127,8 +134,13 @@ class SimpleAgent:
 			self.socket.mytanks.update()
 			self.game.update()
 
+			index = 0
 			for tank in self.tanks:
 				tank.update()
+				repulsionField = self.game.fields.fields["mytank_%d" % (index, )]
+				repulsionField.x = tank.bzrTank.position.real
+				repulsionField.y = tank.bzrTank.position.imag
+				index += 1
 
 			if(doPrint and time.time() - lastPrint > 5):
 				bzrplot.plot(self.tanks[0].field, "curgame_%d.png" % (imageCount, ))
