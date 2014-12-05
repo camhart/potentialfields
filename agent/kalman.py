@@ -19,10 +19,11 @@ identity6x6 = numpy.matrix([
 	[0, 0, 0, 0, 0, 1]
 	])
 
-zeroAccelerationTolerance = 1000
+zeroAccelerationTolerance = 10
 zeroTolerence = 0.0001
 
 def TimeTillHit(projPos, projVel, targetPos, targetVel, targetAccel):
+
 	if abs(targetAccel) < zeroAccelerationTolerance:
 		velDiff = targetVel - projVel
 		if abs(velDiff) < zeroTolerence:
@@ -134,8 +135,9 @@ class Filter:
 
 	# x, y is the position of the projectile
 	# vx, vy is the velocity of the projectile
-	def WillProjectileHit(self, x, y, vx, vy, hitRadius, shotLifetime):
+	def WillProjectileHit(self, x, y, vx, vy, hitRadius, shotLifetime, radiusDistanceScalar = 3):
 		time = TimeTillHit(x, vx, self.trackedPosition.item(0), self.trackedPosition.item(1), self.trackedPosition.item(2))
+
 
 		if time < 0:
 			time = TimeTillHit(y, vy, self.trackedPosition.item(3), self.trackedPosition.item(4), self.trackedPosition.item(5))
@@ -154,9 +156,9 @@ class Filter:
 		futureOffX = futureX - futureProjX
 		futureOffY = futureY - futureProjY
 
-		#plotFilterPredictions(futureX, futureY, futureProjX, futureProjY)
-
-		return futureOffX * futureOffX + futureOffY * futureOffY <= hitRadius * hitRadius
+		actualRadius = hitRadius * (1 + (radiusDistanceScalar - 1) * time / shotLifetime)
+		
+		return futureOffX * futureOffX + futureOffY * futureOffY <= actualRadius * actualRadius
 
 if __name__ == "__main__":
 	linearTest = Filter()

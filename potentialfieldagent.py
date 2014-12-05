@@ -12,8 +12,9 @@ class FieldFollowTank(object):
 	def __init__(self, bzrTank, field, game, useRandomField=False):
 		self.bzrTank = bzrTank
 		self.field = field
+		self.randomField = RandomField()
 		if(useRandomField):
-			self.field.addField("random", RandomField())
+			self.field.addField("random", self.randomField)
 		self.game = game
 
 	def update(self):
@@ -40,7 +41,7 @@ class CaptureFlagTank(FieldFollowTank):
 		self.field.addField("flag", self.goalField)
 
 		self.flagRepulsor = RepulsionField(-1, -1)
-		self.field.addField("flagRepulsor", self.flagRepulsor)
+		#self.field.addField("flagRepulsor", self.flagRepulsor)
 
 		self.lastFlagPos = complex(0, 0)
 		# self.field.addField("teamField");
@@ -51,18 +52,19 @@ class CaptureFlagTank(FieldFollowTank):
 		self.targetColor = color
 
 	def update(self):
-		team = self.game.teams[self.targetColor]
+		targetTeam = self.game.teams[self.targetColor]
+		ownTeam = self.game.teams[self.game.mycolor]
 
 		if self.bzrTank.flag == '-':
-			flagPos = team.flagPosition
+			flagPos = targetTeam.flagPosition
 			self.goalField.x = flagPos.real
 			self.goalField.y = flagPos.imag
+			self.flagRepulsor.x = ownTeam.basePosition.real
+			self.flagRepulsor.y = ownTeam.basePosition.imag
 			self.lastFlagPos = flagPos
 
-			self.flagRepulsor.x = team.basePosition.real
-			self.flagRepulsor.y = team.basePosition.imag
 		else:
-			homePos = self.game.teams[self.game.mycolor].basePosition
+			homePos = ownTeam.basePosition
 			self.goalField.x = homePos.real
 			self.goalField.y = homePos.imag
 			self.flagRepulsor.x = self.lastFlagPos.real
@@ -70,7 +72,8 @@ class CaptureFlagTank(FieldFollowTank):
 
 		super(CaptureFlagTank,self).update()
 
-defendDistance = 50
+defendDistance = 40
+defendSpeed = 1.0
 baseFlagDistance = 100
 
 class DefendFlagTank:
@@ -100,9 +103,9 @@ class DefendFlagTank:
 			targetDistance = 0
 
 		if flagDistance > targetDistance:
-			self.bzrTank.setSpeed(1.0)
+			self.bzrTank.setSpeed(defendSpeed)
 		else:
-			self.bzrTank.setSpeed(-1.0)
+			self.bzrTank.setSpeed(-defendSpeed)
 			
 
 class SimpleAgent:
@@ -151,8 +154,6 @@ class SimpleAgent:
 
 
 if __name__ == "__main__":
-
-
 	parser = argparse.ArgumentParser(prog="potentialfieldagent")
 	parser.add_argument("--host", help="the host to connect to")
 	parser.add_argument("--port", type=int, help="the port to connect to")

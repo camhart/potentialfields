@@ -198,7 +198,7 @@ class BZRGame(object):
 		return targetKalmanFilter.WillProjectileHit(
 			fireingTank.position.real, fireingTank.position.imag,
 			fireingTank.direction.real * self.shotSpeed, fireingTank.direction.imag * self.shotSpeed, 
-			self.tankRadius * 2.0, self.shotLifetime)
+			self.tankRadius * 2, self.shotLifetime, 2.0)
 
 	def buildObstacles(self):
 		obstacleResponse = self.socket.issueCommand("obstacles", True)

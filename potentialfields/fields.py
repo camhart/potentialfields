@@ -39,11 +39,16 @@ class GoalField(PotentialField):
         if diffX == 0 and diffY == 0: #sitting on the goal
             return (0, 0)
 
-        dist = math.sqrt(math.pow(diffX, 2) + math.pow(diffY, 2))
+        dist = math.sqrt(diffX * diffX + diffY * diffY)
         theta = math.atan2(diffY, diffX)
 
-        retX = self.alpha * math.cos(theta)
-        retY = self.alpha * math.sin(theta)
+	strength = self.alpha
+
+	if dist < 100:
+		strength *= 10
+
+        retX = strength * math.cos(theta)
+        retY = strength * math.sin(theta)
 
         return (retX, retY)
 
